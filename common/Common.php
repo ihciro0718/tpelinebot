@@ -37,16 +37,28 @@ function requestFail($httpCode)
  */
 function messagesFromBot($uri, array $uids, array $messageFormat, array $messageType, $token)
 {
+    // $postData = [
+    //     'to' => $uids,
+    //     'toChannel' => $messageType['toChannel'],
+    //     'eventType' => $messageType['eventType'],
+    //     'content' => $messageFormat,
+    // ];
+    // 機器人推播基本設定
+    // $headers = [
+    //     'Content-Type: application/json;charset=UTF-8',
+    //     'X-Line-ChannelToken:' . $token,
+    // ];
+    $messages = [];
+    $messages[0]['type'] = 'text';
+    $messages[0]['text'] = $messageFormat['text'];
     $postData = [
         'to' => $uids,
-        'toChannel' => $messageType['toChannel'],
-        'eventType' => $messageType['eventType'],
-        'content' => $messageFormat,
+        'messages' => $messages
     ];
     // 機器人推播基本設定
     $headers = [
         'Content-Type: application/json;charset=UTF-8',
-        'X-Line-ChannelToken:' . $token,
+        'Authorization: Bearer <' . $token . '>'
     ];
 
     $curl = curl_init($uri);
@@ -99,9 +111,13 @@ function messagesFromBot($uri, array $uids, array $messageFormat, array $message
 function getLineUserProfile($uri)
 {
     // 機器人推播基本設定
+    // $headers = [
+    //     'Content-Type: application/json;charset=UTF-8',
+    //     'X-Line-ChannelToken:' . X_LINE_CHANNELTOKEN,
+    // ];
     $headers = [
         'Content-Type: application/json;charset=UTF-8',
-        'X-Line-ChannelToken:' . X_LINE_CHANNELTOKEN,
+        'Authorization: Bearer <' . $token . '>'
     ];
 
     $curl = curl_init();
