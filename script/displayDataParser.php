@@ -42,13 +42,10 @@ function parseNCDRDWorkSchoolCloseData()
     global $taiwanGeocode;
     $dataToDB = [];
     $obj = new NCDRDWSCParser;
-    // parse only tpe city
-    // foreach ($taiwanGeocode as $code => $area) {
     $xmlData = $obj->getRawData(ROOT_PATH . DISPLAY_DATASET_PATH, 'ncdr_workschoolclose_63', 'xml');
     if ($xmlData) {
         $dataToDB['result'] = $obj->parseData();
     }
-    // }
     $obj->saveToDB('ncdr_workschoolclose', '', json_encode($dataToDB), 'dataset_to_display');
 }
 function parseNCDRDParkingData()
@@ -128,15 +125,17 @@ function parseAirboxDData()
     array_shift($TPEschoolsList);
     array_shift($deviceInfoList);
 
-    $airboxGZ = ['AirBoxData_V2', 'AirBoxDevice_V2'];
+    //$airboxGZ = ['AirBoxData_V2', 'AirBoxDevice_V2'];
+    $airboxGZ = ['AirBoxData_V3'];
     $obj = new AirboxDParser;
     foreach ($airboxGZ as $fn) {
         $obj->uncompressGZ(ROOT_PATH . DISPLAY_DATASET_PATH, $fn, 'json');
     }
 
-    $airboxData = $obj->getRawData(ROOT_PATH . DISPLAY_DATASET_PATH, 'AirBoxData_V2', 'json');
-    $airboxDeviceData = $obj->getRawData(ROOT_PATH . DISPLAY_DATASET_PATH, 'AirBoxDevice_V2', 'json');
+    $airboxData = $obj->getRawData(ROOT_PATH . DISPLAY_DATASET_PATH, 'AirBoxData_V3', 'json');
+    //$airboxDeviceData = $obj->getRawData(ROOT_PATH . DISPLAY_DATASET_PATH, 'AirBoxDevice_V2', 'json');
 
-    $obj->setupData($airboxData, $airboxDeviceData, $deviceInfoList, $TPEschoolsList);
+    //$obj->setupData($airboxData, $airboxDeviceData, $deviceInfoList, $TPEschoolsList);
+    $obj->setupData($airboxData, $deviceInfoList, $TPEschoolsList);
     $obj->parseData();
 }

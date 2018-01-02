@@ -547,10 +547,10 @@ class AirboxDParser extends Parser
      * @param $di
      * @param $tscl
      */
-    public function setupData($abd, $abdd, $di, $tscl)
+    public function setupData($abd, $di, $tscl)
     {
         $this->airboxData = $abd;
-        $this->airboxDeviceData = $abdd;
+        //$this->airboxDeviceData = $abdd;
         $this->deviceInfoList = $di;
         $this->tpeSchoolsList = $tscl;
     }
@@ -562,9 +562,10 @@ class AirboxDParser extends Parser
     public function parseData()
     {
         global $taiwanGeocodeTpe;
+
         $rst = [];
         $this->airboxData = json_decode($this->airboxData, true);
-        $this->airboxDeviceData = json_decode($this->airboxDeviceData, true);
+        //$this->airboxDeviceData = json_decode($this->airboxDeviceData, true);
         /**
          * append school district to devicesList
          */
@@ -581,6 +582,30 @@ class AirboxDParser extends Parser
                     // 私立光仁小學 => 光仁國小
                     // 市大附小 => 台北市立大學附設實驗國小
                     // 私立復興實驗高中 => 私立復興實驗中學
+                    if ($scl['schoolDist'] == '國語實小') {
+                        $scl['schoolDist'] = '國語實驗小學';
+                    }
+                    else if ($scl['schoolDist'] == '私立靜心小學') {
+                        $scl['schoolDist'] = '私立靜心國民中小學';
+                    }
+                    else if ($scl['schoolDist'] == '私立華興小學') {
+                        $scl['schoolDist'] = '華興國小';
+                    }
+                    else if ($scl['schoolDist'] == '私立薇閣小學') {
+                        $scl['schoolDist'] = '薇閣國小';
+                    }
+                    else if ($scl['schoolDist'] == '私立新民小學') {
+                        $scl['schoolDist'] = '新民國小';
+                    }
+                    else if ($scl['schoolDist'] == '私立光仁小學') {
+                        $scl['schoolDist'] = '光仁國小';
+                    }
+                    else if ($scl['schoolDist'] == '市大附小') {
+                        $scl['schoolDist'] = '台北市立大學附設實驗國小';
+                    }
+                    else if ($scl['schoolDist'] == '私立復興實驗高中') {
+                        $scl['schoolDist'] = '私立復興實驗中學';
+                    }
                     $this->deviceInfoList[$i]['deviceDist'] = $scl['schoolDist'];
                     $this->deviceInfoList[$i]['gps']['lat'] = $scl['gps']['lat'];
                     $this->deviceInfoList[$i]['gps']['lng'] = $scl['gps']['lng'];
@@ -601,16 +626,18 @@ class AirboxDParser extends Parser
             foreach ($this->airboxData['entries'] as $abd) {
                 if ($abd['device_id'] === $this->deviceInfoList[$i]['deviceId']) {
                     $rst[$j]['recoreTime'] = $abd['time'];
-                    $rst[$j]['pm25'] = $abd['s_d0'];
+                    $rst[$j]['pm25'] = $abd['pm25'];
+                    $rst[$j]['gps']['lat'] = $abd['lat'];
+                    $rst[$j]['gps']['lng'] = $abd['lon'];
                 }
             }
-
+            /*
             foreach ($this->airboxDeviceData['devices'] as $device) {
                 if ($device['device_id'] === $this->deviceInfoList[$i]['deviceId']) {
                     $rst[$j]['gps']['lat'] = $device['gps_lat'];
                     $rst[$j]['gps']['lng'] = $device['gps_lon'];
                 }
-            }
+            }*/
             $j++;
         }
         $rstLen = count($rst);
@@ -621,7 +648,6 @@ class AirboxDParser extends Parser
                 // save only those with pm25 data
                 if ($v === $rst[$i]['deviceDist'] && isset($rst[$i]['pm25'])) {
                     $toSave[$j] = $rst[$i];
-
                     $j++;
                 }
             }
@@ -629,7 +655,7 @@ class AirboxDParser extends Parser
             $this->info = json_encode($dataToDB);
             $this->areaCode = $k;
             $this->saveToDB($this->datasetId, $this->areaCode, $this->info, $this->tblName);
-            // 存入pushDB
+            // // 存入pushDB
             sleep(1);
             $this->saveToDB($this->datasetId, $this->areaCode, $this->info, 'dataset_to_push');
             $this->setDebugInfo(ROOT_PATH . '/logs/Pparser.airbox.log', $this->areaCode . ' : ' . $this->info);

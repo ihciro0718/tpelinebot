@@ -41,7 +41,7 @@ $uriConfig = [
     // http://data.taipei/opendata/datalist/datasetMeta/download?id=4ba06157-3854-4111-9383-3b8a188c962a&rid=121311db-55f0-4bf3-908c-5456d8491d43 => save as ROOT_PATH . DISPLAY_DATASET_PATH .'AirBoxDevicesList.csv', UTF8-encoding
     'airbox' => [
         //'https://tpairbox.blob.core.windows.net/blobfs/AirBoxDevice_V2.gz',
-        'https://tpairbox.blob.core.windows.net/blobfs/AirBoxData_V2.gz',
+        'https://tpairbox.blob.core.windows.net/blobfs/AirBoxData_V3.gz',
     ],
 ];
 $eocDisasterCasecate = [
