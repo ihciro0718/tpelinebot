@@ -40,15 +40,15 @@ $lineConst = [
 ];
 $lineApi = [
     'sendMessage' => [
-        'BC' => 'https://api.line.me/v1/events',
+        'BC' => 'https://api.line.me/v2/bot/message/multicast',
         'Trail' => 'https://trialbot-api.line.me/v1/events',
     ],
     'getUserProfile' => [
-        'BC' => 'https://api.line.me/v1/profiles',
+        'BC' => 'https://api.line.me/v2/bot/profile',
         'Trial' => 'https://trialbot-api.line.me/v1/profiles',
     ],
     'refreshToken' => [
-        'BC' => 'https://api.line.me/v1/oauth/accessToken',
+        'BC' => 'https://api.line.me/v2/oauth/accessToken',
     ]
 ];
 $lineTrialConfig = [
