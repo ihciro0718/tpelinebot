@@ -14,7 +14,7 @@ abstract class Pusher
      * @var mixed
      */
     public $dataToPush, $pushableMemberList;
-    private $lineToken;
+    public $lineToken;
     /**
      * @param $msg
      */
