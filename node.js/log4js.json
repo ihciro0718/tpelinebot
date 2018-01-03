@@ -1,0 +1,13 @@
+{
+	"appenders": [
+		{
+			"type": "logLevelFilter",
+			"level": "ALL",
+			"category": "nodeCent",
+			"appender":{
+				"type": "file",
+				"filename": "nodeCent.log"
+			}
+		}
+	]
+}
