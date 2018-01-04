@@ -1,7 +1,15 @@
 {
+    "channel_id": "1547515310",
+    "channel_secret": "3585d5d1051770475400c26b3056d3d5",
+    "redirect_uri": "https://linetestservice.gov.taipei/",
+    "channel_access_token": "ldG15q4a0aBxI7zZzo1urYodWNlnKITv+DR7qClfed32S+upkRel6tLgWDMF8f/3f0PIUsOZSWGh5Semj8cdk9CxbHo17c4UMXxIxc7iIz5zKlhXhNXMlsvdNkbh4ZgpwHUl+ymhIwPu3OHd5qlxAJpJanU2lNBfYDNdOKTsp30=",
+    "AUTH_TOKEN": ""
+}
+/*
+{
     "channel_id": "1547499307",
     "channel_secret": "5eb38e079f53038a69d39c058aa0da45",
     "redirect_uri": "https://lineloginvtesttwodocone.herokuapp.com/",
     "channel_access_token": "CMo+4tvMOLZKEM9R8a19AhiF9utxZPz+4ZG/g0D5BGZH/7K8PiR5HP/ZxmfQf/GsrHrW6qXAC4BDyXRzYkNSmIxTnsG5S17EZNhqm9g18SGtdzt9WUEF1t96aKW954DtnFqF2fLra0NgVxJuPzPtlwdB04t89/1O/w1cDnyilFU=",
     "AUTH_TOKEN": ""
-}
+}*/
