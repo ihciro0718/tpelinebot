@@ -259,11 +259,12 @@ function saveToDB(did, ac, info, tn) {
         var MysqlFormat = new Date().toISOString().
             replace(/T/, ' ').      // replace T with a space
             replace(/\..+/, '');
+        MysqlFormat = 'NOW()';
         console.log("MysqlFormat: " + MysqlFormat);
         if (result == '') {
-            sql = "INSERT INTO " + tn + " VALUES ('" + did + "','" + ac + "','" + info + "','" + MysqlFormat + "','" + MysqlFormat + "')";
+            sql = "INSERT INTO " + tn + " VALUES ('" + did + "','" + ac + "','" + info + "'," + MysqlFormat + "," + MysqlFormat + ")";
         } else {
-            sql = "UPDATE " + tn + " SET info_to_show = '" + info + "' , changed_at = '" + MysqlFormat + "' WHERE (id = '" + did + "' AND area_code = '" + ac + "')";
+            sql = "UPDATE " + tn + " SET info_to_show = '" + info + "' , changed_at = " + MysqlFormat + " WHERE (id = '" + did + "' AND area_code = '" + ac + "')";
         }
         pool.query(sql, function (error, result) {
             console.log(sql);
@@ -900,10 +901,11 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
     var MysqlFormat = new Date().toISOString().
         replace(/T/, ' ').      // replace T with a space
         replace(/\..+/, '');
-    console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0','" + MysqlFormat + "', ' "+MysqlFormat+" ' ,'1')");
-    logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0','" + MysqlFormat + "', ' "+MysqlFormat+" ' ,'1')");
+    MysqlFormat = 'NOW()';
+    console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
+    logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
     try{
-        pool.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0','" + MysqlFormat + "', ' "+MysqlFormat+" ' ,'1')", function (error, result) {
+        pool.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')", function (error, result) {
             var rst_false = {
                 result: '',
                 errorMessage: ''
@@ -1000,6 +1002,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
         var MysqlFormat = new Date().toISOString().
             replace(/T/, ' ').      // replace T with a space
             replace(/\..+/, '');
+        MysqlFormat = 'NOW()';
         listSubscriptionContainer(mid, did, function (origRaw) {
             switch (todo) {
                 case 'cancelArea':
@@ -1128,7 +1131,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                 default:
                     break;
             }
-            pool.query("UPDATE subscription_container SET detail = '" + dataToUpdate + "' , changed_at = '" + MysqlFormat + "' WHERE (dataset_id = '" + did + "' AND mid = '" + mid + "')", function (error, result) {
+            pool.query("UPDATE subscription_container SET detail = '" + dataToUpdate + "' , changed_at = " + MysqlFormat + " WHERE (dataset_id = '" + did + "' AND mid = '" + mid + "')", function (error, result) {
                 var rst_false = {
                     result: '',
                     errorMessage: ''
