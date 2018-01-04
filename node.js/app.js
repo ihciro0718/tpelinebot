@@ -34,7 +34,11 @@ var server = http.Server(app).listen(port);*/
 var bodyParser = require('body-parser');  //JSON解析body的資料
 var mysql = require('mysql'); // mysql
 var url = require("url");
+<<<<<<< HEAD
+var fs = require('graceful-fs');
+=======
 
+>>>>>>> add054253776749f287f627b760786ceccb4b27b
 var config = fs.readFileSync(__dirname+'/config.json', 'utf8');
 config = JSON.parse(config);
 var jwtDecode = require('jwt-decode');
