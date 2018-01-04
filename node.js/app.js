@@ -58,14 +58,14 @@ process.on('uncaughtException', function(e) {
 });
 
 //mysql----------------------------------------------------------------------------------------------------------------
-var connection = mysql.createConnection({
+var pool = mysql.createPool({
+    connectionLimit : 100,
     host: db.host, //如果database在另一台機器上，要改這裡
     user: db.user,
     password: db.password,
-    database: db.database, //要抓的database名稱
-    useConnectionPooling: true
+    database: db.database //要抓的database名稱
 });
-connection.connect(function (error) {
+pool.getConnection(function (error) {
     // mysql
     if (!!error) {
         logger.info('Database Error');
@@ -250,7 +250,7 @@ app.get('/AirBoxData', function (request, response) {
 function saveToDB(did, ac, info, tn) {
     console.log("saveToDB: " + tn);
     console.log("info " + info);
-    connection.query("SELECT * FROM " + tn + " WHERE (id = '" + did + "' AND area_code = '" + ac + "')", function (error, result) {
+    pool.query("SELECT * FROM " + tn + " WHERE (id = '" + did + "' AND area_code = '" + ac + "')", function (error, result) {
         if (error) {
             logger.info('saveToDB '+error);
             console.log(error)
@@ -265,7 +265,7 @@ function saveToDB(did, ac, info, tn) {
         } else {
             sql = "UPDATE " + tn + " SET info_to_show = '" + info + "' , changed_at = '" + MysqlFormat + "' WHERE (id = '" + did + "' AND area_code = '" + ac + "')";
         }
-        connection.query(sql, function (error, result) {
+        pool.query(sql, function (error, result) {
             console.log(sql);
             if (error) {
                 console.log(error);
@@ -594,7 +594,7 @@ function GetUserProfile(choose, pathname, callback) {
 };
 
 function addMember(mid, displayName, picUrl, statusMsg) {
-    connection.query("INSERT INTO member VALUES ('" + mid + "','" + displayName + "','" + picUrl + "','" + statusMsg + "')", function (error, result) {
+    pool.query("INSERT INTO member VALUES ('" + mid + "','" + displayName + "','" + picUrl + "','" + statusMsg + "')", function (error, result) {
         var rst = {
             'result': '',
             'errorMessage': ''
@@ -684,7 +684,7 @@ function listDatasetInfoToShow(did, area, callback) {
     console.log("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')");
     logger.info("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')");
     try{
-        connection.query("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
+        pool.query("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
             var rst_false = {
                 result: '',
                 errorMessage: ''
@@ -796,7 +796,7 @@ function listSubscriptionContainer(mid, did, callback) {
     logger.log('------------------------------------------------------'+"SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
     console.log('------------------------------------------------------'+"SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
     try{
-        connection.query("SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')", function (error, result) {
+        pool.query("SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')", function (error, result) {
             var rst_false = {
                 result: '',
                 errorMessage: ''
@@ -903,7 +903,7 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
     console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0','" + MysqlFormat + "', ' "+MysqlFormat+" ' ,'1')");
     logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0','" + MysqlFormat + "', ' "+MysqlFormat+" ' ,'1')");
     try{
-        connection.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0','" + MysqlFormat + "', ' "+MysqlFormat+" ' ,'1')", function (error, result) {
+        pool.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0','" + MysqlFormat + "', ' "+MysqlFormat+" ' ,'1')", function (error, result) {
             var rst_false = {
                 result: '',
                 errorMessage: ''
@@ -1128,7 +1128,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                 default:
                     break;
             }
-            connection.query("UPDATE subscription_container SET detail = '" + dataToUpdate + "' , changed_at = '" + MysqlFormat + "' WHERE (dataset_id = '" + did + "' AND mid = '" + mid + "')", function (error, result) {
+            pool.query("UPDATE subscription_container SET detail = '" + dataToUpdate + "' , changed_at = '" + MysqlFormat + "' WHERE (dataset_id = '" + did + "' AND mid = '" + mid + "')", function (error, result) {
                 var rst_false = {
                     result: '',
                     errorMessage: ''
@@ -1217,7 +1217,7 @@ app.get('/restfulapi/v1/listDataset/', function (request, response) {
 function listDataset(did, area, callback) {
     logger.info('function listDataset');
     console.log(did + " AND " + area);
-    connection.query("SELECT * FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
+    pool.query("SELECT * FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
         var rst_false = {
             result: '',
             errorMessage: ''
@@ -1294,7 +1294,7 @@ app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
 function listPDatasetInfoToShow(did, area, callback) {
     logger.info('listPDatasetInfoToShow');
     console.log(did + " AND " + area);
-    connection.query("SELECT info_to_show FROM dataset_to_push WHERE (id = '" + did + "' AND area_code = '" + area + "' AND (UNIX_TIMESTAMP(" + Date.now() + ")-UNIX_TIMESTAMP(`changed_at`) < 86400 ))", function (error, result) {
+    pool.query("SELECT info_to_show FROM dataset_to_push WHERE (id = '" + did + "' AND area_code = '" + area + "' AND (UNIX_TIMESTAMP(" + Date.now() + ")-UNIX_TIMESTAMP(`changed_at`) < 86400 ))", function (error, result) {
         var rst_false = {
             result: '',
             errorMessage: ''
@@ -1375,7 +1375,7 @@ app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, res
     });
 });
 function deleteSubscriptionContainer(mid, did, callback) {
-    connection.query("DELETE FROM subscription_container WHERE mid = '" + mid + "' AND dataset_id = '" + did + "'", function (error, result) {
+    pool.query("DELETE FROM subscription_container WHERE mid = '" + mid + "' AND dataset_id = '" + did + "'", function (error, result) {
         var rst_false = {
             result: '',
             errorMessage: ''
@@ -1409,7 +1409,7 @@ function deleteSubscriptionContainer(mid, did, callback) {
     });
 }
 function SendUsers() {
-    connection.query("SELECT mid FROM member", function (error, result) {
+    pool.query("SELECT mid FROM member", function (error, result) {
         //callback
         if (!!error) {
             console.log('Error in the query');
