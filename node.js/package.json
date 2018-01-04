@@ -1,0 +1,24 @@
+{
+  "name": "bottest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "log4js": "^1.1.1",
+    "log4js-extend": "^0.1.2",
+    "express": "^4.16.2",
+    "linebot": "^1.3.0",
+    "fs": "latest",
+    "graceful-fs": "latest",
+    "querystring": "latest",
+    "line-api" : "^0.1.4",
+    "mysql": "^2.15.0",
+    "jwt-decode": "latest",
+    "util": "latest"
+  }
+}

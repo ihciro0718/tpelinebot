@@ -14,6 +14,9 @@ var hashtable = require(__dirname + '/hashtable.js');
 // 建立 express service
 var express = require('express');  // var 宣告express物件， require請求
 var app = express();
+var fs = require('fs');
+var gracefulFs = require('graceful-fs');
+gracefulFs.gracefulify(fs);
 
 var port = process.env.PORT || 443;  //run 在443 port上
 var privateKey = require('fs').readFileSync('/etc/letsencrypt/live/linetestservice.gov.taipei/privkey.pem');
@@ -31,7 +34,7 @@ var server = http.Server(app).listen(port);*/
 var bodyParser = require('body-parser');  //JSON解析body的資料
 var mysql = require('mysql'); // mysql
 var url = require("url");
-var fs = require('fs');
+
 var config = fs.readFileSync(__dirname+'/config.json', 'utf8');
 config = JSON.parse(config);
 var jwtDecode = require('jwt-decode');
