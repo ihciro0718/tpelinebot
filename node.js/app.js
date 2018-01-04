@@ -59,7 +59,8 @@ var connection = mysql.createConnection({
     host: db.host, //如果database在另一台機器上，要改這裡
     user: db.user,
     password: db.password,
-    database: db.database //要抓的database名稱
+    database: db.database, //要抓的database名稱
+    useConnectionPooling: true
 });
 connection.connect(function (error) {
     // mysql
