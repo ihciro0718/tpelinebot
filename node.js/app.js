@@ -482,6 +482,45 @@ app.get('/get_center_control', function (request, response) {
     });
     req.end();
 });
+app.get('/get_disaster_stat/:id', function (request, response) {
+    logger.info('GET /setting request (get_disaster_stat)');
+    var id = request.params.id;
+    var options = {
+        host: config.eocip,
+        path: '/DisasterOperationSystemWebAPIUnite/api/DisasterServiceApi/GetDisasterCategoryAndSumByDPID?District=' + id,
+        method: 'GET',
+        headers: {
+            'Content-Type': 'Content-Type: application/json;charset=UTF-8'
+        }
+    };
+    var http = require('http');
+    var sendData = "";
+    var req = http.get(options, function (res) {      
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            console.log('Response: ' + chunk);
+            sendData = sendData + chunk;
+        });
+
+        res.on('end', function(){
+            if(res.statusCode == 200){
+                var finalData = {
+                "Data":""
+                }
+                finalData.Data = sendData;
+                response.send(finalData);//不確定Data是什麼有可能EOC無法顯示
+                console.log('success end');
+            }else{
+                var finalData = {
+                    "isCenterOpen": false
+                }
+                response.send(finalData);
+                console.log('false end');
+            }
+        });      
+    });
+    req.end();
+});
 app.get('/flood_control' + '/EOC', function (request, response) {
     logger.info('GET /setting request (EOC)');
     request.header("Content-Type", 'text/html');
