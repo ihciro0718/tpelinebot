@@ -437,7 +437,7 @@ app.get('/get_center_control', function (request, response) {
     response.write(url);
     response.end();*/
     var options = {
-        host: '210.59.250.198',
+        host: config.eocip,
         path: '/DisasterOperationSystemWebAPIUnite/api/DisasterServiceApi/GetCenterControl',
         method: 'GET',
         headers: {
@@ -557,6 +557,11 @@ function GetUserProfile(choose, pathname, callback) {
         }
 
     }
+    var dns = require('dns');
+    dns.lookup('api.line.me', function(err, result){
+        console.log(result);
+        logger.info(result);
+    }) ;
     var postdata = "grant_type=" + data.grant_type + "&code=" + data.code + "&redirect_uri=" + data.redirect_uri + "&client_id=" + data.client_id + "&client_secret=" + data.client_secret;
     var options = {
         host: 'api.line.me',

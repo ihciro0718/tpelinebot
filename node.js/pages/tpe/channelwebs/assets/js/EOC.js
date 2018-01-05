@@ -73,7 +73,7 @@ function showEOCInfo(sel) {
 
     var infoPerLine = document.createElement('span');
     infoPerLine.style.display = 'block';
-    var infoText = document.createTextNode("測試資料"/*i + ' : ' + data[i]*/);
+    var infoText = document.createTextNode(""/*i + ' : ' + data[i]*/);
     infoPerLine.appendChild(infoText);
     infoaction.appendChild(infoPerLine);
 
