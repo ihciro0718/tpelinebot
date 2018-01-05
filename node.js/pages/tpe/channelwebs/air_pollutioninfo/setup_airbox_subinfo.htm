@@ -14,6 +14,18 @@
 </head>
 
 <body>
+    <script type="text/javascript">
+        window.history.forward(1);
+        function backpage() {
+            var warning = confirm('你確定要回到上一頁嗎?\n確定的話將無法存取你的訂閱資料！');
+            if (warning == true) {
+                history.go(-1);
+                return true;
+            } else {
+                return false;
+            }
+        };
+    </script>
     <div id="wrapper">
         <div id="main">
             <div id="subc__desc"></div>
@@ -120,7 +132,7 @@
                     </div>
                     <button id="submitAirboxSubInfo" class="sbtn--want" style="font-weight:bold;font-size:25px;">確認送出</button>
                 </div>
-                <button class="back" onclick="history.go(-1);"></button>
+                <button class="back" onclick="backpage()"></button>
             </div>
         </div>
     </div>
