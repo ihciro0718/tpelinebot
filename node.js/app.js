@@ -259,8 +259,8 @@ function saveToDB(did, ac, info, tn) {
         var MysqlFormat = new Date().toISOString().
             replace(/T/, ' ').      // replace T with a space
             replace(/\..+/, '');
-        MysqlFormat = 'NOW()';
-        console.log("MysqlFormat: " + MysqlFormat);
+        MysqlFormat = NOW();
+        logger.info("MysqlFormat: " + MysqlFormat);
         if (result == '') {
             sql = "INSERT INTO " + tn + " VALUES ('" + did + "','" + ac + "','" + info + "'," + MysqlFormat + "," + MysqlFormat + ")";
         } else {
@@ -906,7 +906,8 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
     var MysqlFormat = new Date().toISOString().
         replace(/T/, ' ').      // replace T with a space
         replace(/\..+/, '');
-    MysqlFormat = 'NOW()';
+    MysqlFormat = NOW();
+    logger.info(MysqlFormat);
     console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
     logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
     try{
@@ -1007,7 +1008,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
         var MysqlFormat = new Date().toISOString().
             replace(/T/, ' ').      // replace T with a space
             replace(/\..+/, '');
-        MysqlFormat = 'NOW()';
+        MysqlFormat = NOW();
         listSubscriptionContainer(mid, did, function (origRaw) {
             switch (todo) {
                 case 'cancelArea':
