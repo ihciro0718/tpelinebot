@@ -66,7 +66,7 @@ function showEOCInfo(sel) {
     var infoaction = document.getElementById('subc__infoaction'),
         modal = document.getElementById('eoc__modal');
     var mm = document.getElementById('eoc_modal_master');
-    var api = './GetDisasterStat.php?d=' + sel.innerHTML;
+    var api = './get_distaster_stat/' + sel.innerHTML;
 
     infoaction.innerHTML = '<p>【' + getGeocodeName(TAIWAN_POSTWITHGEO_CODE_TPE[sel.dataset.postcode]) + '】</p>';
     var le = document.createElement('br');
