@@ -1,7 +1,7 @@
-window.addEventListener("load", function(e) {
-    
+window.addEventListener("load", function (e) {
+
     $(document).ready(function () {
-        document.addEventListener('touchstart', function(e) { e.stopPropagation(); }, false);
+        document.addEventListener('touchstart', function (e) { e.stopPropagation(); }, false);
         /*
         var options = {
             pageKey: "EOC",
@@ -67,7 +67,30 @@ function showEOCInfo(sel) {
         modal = document.getElementById('eoc__modal');
     var mm = document.getElementById('eoc_modal_master');
     var api = './GetDisasterStat.php?d=' + sel.innerHTML;
-    $.ajax({
+
+    infoaction.innerHTML = '<p>【' + getGeocodeName(TAIWAN_POSTWITHGEO_CODE_TPE[sel.dataset.postcode]) + '】</p>';
+    var le = document.createElement('br');
+
+    var infoPerLine = document.createElement('span');
+    infoPerLine.style.display = 'block';
+    var infoText = document.createTextNode("測試資料"/*i + ' : ' + data[i]*/);
+    infoPerLine.appendChild(infoText);
+    infoaction.appendChild(infoPerLine);
+
+    var iaa = document.createElement('a');
+    iaa.href = 'http://210.59.250.198/EOCLineMap/Map.html?District=' + getGeocodeName(TAIWAN_POSTWITHGEO_CODE_TPE[sel.dataset.postcode]);
+    iaa.style.fontSize = '22px';
+    iaa.setAttribute('target', '_blank');
+    iaa.innerHTML = '<br>查看更多資訊請點我';
+    infoaction.appendChild(iaa);
+
+    var w = (window.innerWidth > 0) ? window.innerWidth : screen.width,
+        h = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+    modal.style.display = 'block';
+    modal.style.width = w - 50 + 'px';
+    modal.style.height = h - 20 + 'px';
+    return;
+    /*$.ajax({
         url: api,
         method: 'GET',
         dataType: 'json',
@@ -92,7 +115,13 @@ function showEOCInfo(sel) {
         } else {
             infoaction.innerHTML += '<span style="font-size: 20px;">目前尚無災情資訊</span>';
         }
-    }).fail(function(jqXhr, text, et) {});
+        var w = (window.innerWidth > 0) ? window.innerWidth : screen.width,
+            h = (window.innerHeight > 0) ? window.innerHeight : screen.height;
+        modal.style.display = 'block';
+        modal.style.width = w - 50 + 'px';
+        modal.style.height = h - 20 + 'px';
+        return;
+    }).fail(function(jqXhr, text, et) {});*/
 }
 
 function closeEOCRst() {
