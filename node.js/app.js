@@ -63,7 +63,8 @@ var pool = mysql.createPool({
     host: db.host, //如果database在另一台機器上，要改這裡
     user: db.user,
     password: db.password,
-    database: db.database //要抓的database名稱
+    database: db.database, //要抓的database名稱
+    waitForConnections: true
 });
 /*
 pool.getConnection(function (error) {
@@ -335,30 +336,41 @@ app.get('/flood_control' + '/EOC', function (request, response) {
         this.res.send(data);
     }.bind({ req: request, res: response }));
 });
+var NCDRSubLists;
 app.get('/flood_control' + '/NCDRSubLists', function (request, response) {
     logger.info('GET /setting request (NCDRSubLists)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRSubLists.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info('NCDRSubLists error');
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (NCDRSubLists == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRSubLists.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info('NCDRSubLists error');
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            NCDRSubLists = data;
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        this.res.send(NCDRSubLists);
+    }
 });
+var NCDRFlood;
 app.get('/flood_control' + '/NCDRFlood', function (request, response) {
     logger.info('GET /setting request (NCDRFlood)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRFlood.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (NCDRFlood == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRFlood.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        this.res.send(NCDRSubLists);
+    }
 });
 /////////////////////////////////////////////////////////////////////////////////////////
 app.use(express.static('pages/tpe'));
@@ -634,11 +646,14 @@ app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response
 function listSubscriptionContainer(mid, did, callback) {
     logger.info('function listSubscriptionContainer');
     console.log('function listSubscriptionContainer');
-    logger.log('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
+    logger.info('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
     console.log('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
     //dbquery(0);
     //function dbquery(times) {
+    var timestamp = new Date().getTime();
+    logger.info('1.' + timestamp);
     pool.getConnection(function (error, connection) {
+        logger.info('2.' + this.timestamp);
         // mysql
         if (!!error) {
             logger.info('Database Error');
@@ -655,7 +670,7 @@ function listSubscriptionContainer(mid, did, callback) {
         } else {
             logger.info('Database Connected');
             console.log('Database Connected');
-            logger.log('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
+            logger.info('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
             connection.query("SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')", function (error, result) {
                 var rst_false = {
                     result: '',
@@ -681,7 +696,7 @@ function listSubscriptionContainer(mid, did, callback) {
                             logger.info(rst_false);
                             connection.release();
                             callback(rst_false);
-                            return; 
+                            return;
                         } catch (err) {
                             logger.info('result================================================================');
                             logger.info(err);
@@ -702,7 +717,7 @@ function listSubscriptionContainer(mid, did, callback) {
                 connection.release();
             });
         }
-    });
+    }.bind({ timestamp: timestamp }));
     //};
 };
 app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response) {
