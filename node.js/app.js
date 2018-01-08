@@ -557,11 +557,6 @@ function listDatasetInfoToShow(did, area, callback) {
 
         }
     });
-    try {
-
-    } catch (err) {
-
-    }
 };
 app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response) {
     console.log('GET /setting request listSubscriptionContainer');
