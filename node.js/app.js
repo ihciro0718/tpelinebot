@@ -546,7 +546,6 @@ function listDatasetInfoToShow(did, area, callback) {
                                 'errorMessage': 'success',
                                 'data': JSON.stringify(result)
                             };
-                            connection.release();
                             callback(rst_true);
                         }
                     } catch (err) {
@@ -556,6 +555,7 @@ function listDatasetInfoToShow(did, area, callback) {
                         logger.info(err);
                     }
                 }
+                connection.release();
             });
 
         }
@@ -750,7 +750,7 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
         } else {
             logger.info('Database Connected');
             console.log('Database Connected');
-            connection.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + "," + MysqlFormat +",'1')", function (error, result) {
+            connection.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + "," + MysqlFormat + ",'1')", function (error, result) {
                 var rst_false = {
                     result: '',
                     errorMessage: ''
@@ -1221,94 +1221,111 @@ function listPDatasetInfoToShow(did, area, callback) {
 
 }
 app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, response) {
-    console.log("deleteSubscriptionContainer: " + JSON.stringify(request.body));
-    var authToken = request.body.authToken;
-    var datasetId = request.body.datasetId;
-    var memberId = request.body.memberId;
-    var rst_false = {
-        result: '',
-        errorMessage: ''
-    };
-    if (authToken == undefined) {
-        console.log("No authorization key");
-        rst_false = {
-            result: false,
-            errorMessage: 'No authorization key'
+    logger.info('deleteSubscriptionContainer');
+    try {
+        var authToken = request.body.authToken;
+        var datasetId = request.body.datasetId;
+        var memberId = request.body.memberId;
+        var rst_false = {
+            result: '',
+            errorMessage: ''
         };
-        response.send(JSON.stringify(rst_false));
+        if (authToken == undefined) {
+            console.log("No authorization key");
+            logger.info("No authorization key");
+            rst_false = {
+                result: false,
+                errorMessage: 'No authorization key'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        if (datasetId == undefined) {
+            console.log("No dataset id");
+            logger.info("No dataset id");
+            rst_false = {
+                result: false,
+                errorMessage: 'No dataset id'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        if (memberId == undefined) {
+            console.log("No memberId id");
+            logger.info("No memberId id");
+            rst_false = {
+                result: false,
+                errorMessage: 'No memberId id'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        if (authToken != config.AUTH_TOKEN) {
+            console.log("Authorization fail");
+            logger.info("No memberId id");
+            rst_false = {
+                result: false,
+                errorMessage: 'Authorization fail'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        deleteSubscriptionContainer(memberId, datasetId, function (data) {
+            console.log("deleteSubscriptionContainer_sendData: " + JSON.stringify(data));
+            logger.info("deleteSubscriptionContainer_sendData: " + JSON.stringify(data));
+            response.send(data);
+        });
+    } catch (err) {
+
     }
-    if (datasetId == undefined) {
-        console.log("No dataset id");
-        rst_false = {
-            result: false,
-            errorMessage: 'No dataset id'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    if (memberId == undefined) {
-        console.log("No memberId id");
-        rst_false = {
-            result: false,
-            errorMessage: 'No memberId id'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    if (authToken != config.AUTH_TOKEN) {
-        console.log("Authorization fail");
-        rst_false = {
-            result: false,
-            errorMessage: 'Authorization fail'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    deleteSubscriptionContainer(memberId, datasetId, function (data) {
-        console.log("deleteSubscriptionContainer_sendData: " + JSON.stringify(data));
-        response.send(data);
-    });
+
 });
 function deleteSubscriptionContainer(mid, did, callback) {
-    pool.getConnection(function (error, connection) {
-        // mysql
-        if (!!error) {
-            logger.info('Database Error');
-            console.log('Database Error');
-            logger.info(error);
-            console.log(error);
-        } else {
-            connection.query("DELETE FROM subscription_container WHERE mid = '" + mid + "' AND dataset_id = '" + did + "'", function (error, result) {
-                var rst_false = {
-                    result: '',
-                    errorMessage: ''
-                };
-                var rst_true = {
-                    result: '',
-                    errorMessage: '',
-                    data: ''
-                };
-                if (error) {
-                    console.log(error);
-                } else {
-                    if (result == '') {
-                        console.log('Invalid input');
-                        rst_false = {
-                            result: false,
-                            errorMessage: 'Invalid input'
-                        };
-                        callback(rst_false);
+    logger.info('function deleteSubscriptionContainer');
+    try {
+        pool.getConnection(function (error, connection) {
+            // mysql
+            if (!!error) {
+                logger.info('Database Error');
+                console.log('Database Error');
+                logger.info(error);
+                console.log(error);
+            } else {
+                connection.query("DELETE FROM subscription_container WHERE mid = '" + mid + "' AND dataset_id = '" + did + "'", function (error, result) {
+                    var rst_false = {
+                        result: '',
+                        errorMessage: ''
+                    };
+                    var rst_true = {
+                        result: '',
+                        errorMessage: '',
+                        data: ''
+                    };
+                    if (error) {
+                        logger.info('Delete error');
+                        logger.info(error);
+                    } else {
+                        if (result == '') {
+                            console.log('Invalid input');
+                            logger.info('Invalid input');
+                            rst_false = {
+                                result: false,
+                                errorMessage: 'Invalid input'
+                            };
+                            callback(rst_false);
+                        } else {
+                            console.log('subscription container deleted');
+                            logger.info('subscription container deleted');
+                            rst_true = {
+                                'result': true,
+                                'errorMessage': 'subscription container deleted',
+                                'data': JSON.stringify(result)
+                            };
+                            callback(rst_true);
+                        }
                     }
-                    else {
-                        console.log('subscription container deleted');
-                        rst_true = {
-                            'result': true,
-                            'errorMessage': 'subscription container deleted',
-                            'data': JSON.stringify(result)
-                        };
-                        callback(rst_true);
-                    }
-                }
-                connection.release();
-            });
-        }
-    });
-
-}
+                    connection.release();
+                });
+            }
+        });
+    } catch (err) {
+        logger.info(err);
+        console.log(err);
+    }
+};
