@@ -259,8 +259,8 @@ function saveToDB(did, ac, info, tn) {
         var MysqlFormat = new Date().toISOString().
             replace(/T/, ' ').      // replace T with a space
             replace(/\..+/, '');
-        MysqlFormat = 'NOW()';
-        console.log("MysqlFormat: " + MysqlFormat);
+        MysqlFormat = NOW();
+        logger.info("MysqlFormat: " + MysqlFormat);
         if (result == '') {
             sql = "INSERT INTO " + tn + " VALUES ('" + did + "','" + ac + "','" + info + "'," + MysqlFormat + "," + MysqlFormat + ")";
         } else {
@@ -437,7 +437,7 @@ app.get('/get_center_control', function (request, response) {
     response.write(url);
     response.end();*/
     var options = {
-        host: '210.59.250.198',
+        host: config.eocip,
         path: '/DisasterOperationSystemWebAPIUnite/api/DisasterServiceApi/GetCenterControl',
         method: 'GET',
         headers: {
@@ -479,6 +479,45 @@ app.get('/get_center_control', function (request, response) {
         this.res.send(data);
     }.bind({ req: request, res: response }));
     */
+    });
+    req.end();
+});
+app.get('/get_disaster_stat/:id', function (request, response) {
+    logger.info('GET /setting request (get_disaster_stat)');
+    var id = request.params.id;
+    var options = {
+        host: config.eocip,
+        path: '/DisasterOperationSystemWebAPIUnite/api/DisasterServiceApi/GetDisasterCategoryAndSumByDPID?District=' + id,
+        method: 'GET',
+        headers: {
+            'Content-Type': 'Content-Type: application/json;charset=UTF-8'
+        }
+    };
+    var http = require('http');
+    var sendData = "";
+    var req = http.get(options, function (res) {      
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            console.log('Response: ' + chunk);
+            sendData = sendData + chunk;
+        });
+
+        res.on('end', function(){
+            if(res.statusCode == 200){
+                var finalData = {
+                "Data":""
+                }
+                finalData.Data = sendData;
+                response.send(finalData);//不確定Data是什麼有可能EOC無法顯示
+                console.log('success end');
+            }else{
+                var finalData = {
+                    "isCenterOpen": false
+                }
+                response.send(finalData);
+                console.log('false end');
+            }
+        });      
     });
     req.end();
 });
@@ -557,6 +596,11 @@ function GetUserProfile(choose, pathname, callback) {
         }
 
     }
+    var dns = require('dns');
+    dns.lookup('api.line.me', function(err, result){
+        console.log(result);
+        logger.info(result);
+    }) ;
     var postdata = "grant_type=" + data.grant_type + "&code=" + data.code + "&redirect_uri=" + data.redirect_uri + "&client_id=" + data.client_id + "&client_secret=" + data.client_secret;
     var options = {
         host: 'api.line.me',
@@ -901,7 +945,8 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
     var MysqlFormat = new Date().toISOString().
         replace(/T/, ' ').      // replace T with a space
         replace(/\..+/, '');
-    MysqlFormat = 'NOW()';
+    MysqlFormat = NOW();
+    logger.info(MysqlFormat);
     console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
     logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
     try{
@@ -1002,7 +1047,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
         var MysqlFormat = new Date().toISOString().
             replace(/T/, ' ').      // replace T with a space
             replace(/\..+/, '');
-        MysqlFormat = 'NOW()';
+        MysqlFormat = NOW();
         listSubscriptionContainer(mid, did, function (origRaw) {
             switch (todo) {
                 case 'cancelArea':

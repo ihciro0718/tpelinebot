@@ -3,5 +3,6 @@
     "channel_secret": "3585d5d1051770475400c26b3056d3d5",
     "redirect_uri": "https://linetestservice.gov.taipei/",
     "channel_access_token": "ldG15q4a0aBxI7zZzo1urYodWNlnKITv+DR7qClfed32S+upkRel6tLgWDMF8f/3f0PIUsOZSWGh5Semj8cdk9CxbHo17c4UMXxIxc7iIz5zKlhXhNXMlsvdNkbh4ZgpwHUl+ymhIwPu3OHd5qlxAJpJanU2lNBfYDNdOKTsp30=",
-    "AUTH_TOKEN": ""
+    "AUTH_TOKEN": "",
+    "eocip": "210.59.250.198"
 }

@@ -66,14 +66,14 @@ function showEOCInfo(sel) {
     var infoaction = document.getElementById('subc__infoaction'),
         modal = document.getElementById('eoc__modal');
     var mm = document.getElementById('eoc_modal_master');
-    var api = './GetDisasterStat.php?d=' + sel.innerHTML;
+    var api = './get_distaster_stat/' + sel.innerHTML;
 
     infoaction.innerHTML = '<p>【' + getGeocodeName(TAIWAN_POSTWITHGEO_CODE_TPE[sel.dataset.postcode]) + '】</p>';
     var le = document.createElement('br');
 
     var infoPerLine = document.createElement('span');
     infoPerLine.style.display = 'block';
-    var infoText = document.createTextNode("測試資料"/*i + ' : ' + data[i]*/);
+    var infoText = document.createTextNode(""/*i + ' : ' + data[i]*/);
     infoPerLine.appendChild(infoText);
     infoaction.appendChild(infoPerLine);
 
