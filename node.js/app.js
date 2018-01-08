@@ -726,17 +726,17 @@ app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response
         console.log(err);
         logger.info(err);
     }
-});
+});//
 function addSubscriptionContainer(mid, did, sdetail, callback) {
     logger.info('function addSubscriptionContainer');
     console.log('function addSubscriptionContainer');
     var MysqlFormat = new Date().toISOString().
         replace(/T/, ' ').      // replace T with a space
         replace(/\..+/, '');
-    MysqlFormat = NOW();
+    MysqlFormat = 'NOW()';
     logger.info(MysqlFormat);
-    console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' " + MysqlFormat + " ' ,'1')");
-    logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' " + MysqlFormat + " ' ,'1')");
+    console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + "," + MysqlFormat + ",'1')");
+    logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", " + MysqlFormat + " ,'1')");
     pool.getConnection(function (error, connection) {
         // mysql
         if (!!error) {
@@ -747,7 +747,7 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
         } else {
             logger.info('Database Connected');
             console.log('Database Connected');
-            connection.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' " + MysqlFormat + " ' ,'1')", function (error, result) {
+            connection.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + "," + MysqlFormat +",'1')", function (error, result) {
                 var rst_false = {
                     result: '',
                     errorMessage: ''
@@ -800,42 +800,50 @@ app.put('/restfulapi/v1/updateSubscriptionContainer/', function (request, respon
         result: '',
         errorMessage: ''
     };
-    if (authToken == undefined) {
-        console.log("No authorization key");
-        rst_false = {
-            result: false,
-            errorMessage: 'No authorization key'
-        };
-        response.send(JSON.stringify(rst_false));
+    try {
+        if (authToken == undefined) {
+            console.log("No authorization key");
+            rst_false = {
+                result: false,
+                errorMessage: 'No authorization key'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        if (datasetId == undefined) {
+            console.log("No dataset id");
+            rst_false = {
+                result: false,
+                errorMessage: 'No dataset id'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        if (memberId == undefined) {
+            console.log("No member id");
+            rst_false = {
+                result: false,
+                errorMessage: 'No member id'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        if (authToken != config.AUTH_TOKEN) {
+            console.log("Authorization fail");
+            rst_false = {
+                result: false,
+                errorMessage: 'Authorization fail'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        updateSubscriptionContainer(memberId, datasetId, subscribeDetail, todo, function (data) {
+            console.log("updateSubscriptionContainerr_sendData: " + JSON.stringify(data));
+            response.send(data);
+        });
+    } catch (err) {
+        console.log('--------------------------------------------------------------/updateSubscriptionContainer');
+        console.log(err);
+        logger.info('--------------------------------------------------------------/updateSubscriptionContainer');
+        logger.info(err);
     }
-    if (datasetId == undefined) {
-        console.log("No dataset id");
-        rst_false = {
-            result: false,
-            errorMessage: 'No dataset id'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    if (memberId == undefined) {
-        console.log("No member id");
-        rst_false = {
-            result: false,
-            errorMessage: 'No member id'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    if (authToken != config.AUTH_TOKEN) {
-        console.log("Authorization fail");
-        rst_false = {
-            result: false,
-            errorMessage: 'Authorization fail'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    updateSubscriptionContainer(memberId, datasetId, subscribeDetail, todo, function (data) {
-        console.log("updateSubscriptionContainerr_sendData: " + JSON.stringify(data));
-        response.send(data);
-    });
+
 });
 function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
     var origRaw, origData, origArea;
@@ -843,7 +851,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
         var MysqlFormat = new Date().toISOString().
             replace(/T/, ' ').      // replace T with a space
             replace(/\..+/, '');
-        MysqlFormat = NOW();
+        MysqlFormat = 'NOW()';
         listSubscriptionContainer(mid, did, function (origRaw) {
             switch (todo) {
                 case 'cancelArea':
@@ -1170,7 +1178,6 @@ function listPDatasetInfoToShow(did, area, callback) {
             logger.info(error);
             console.log(error);
         } else {
-
             connection.query("SELECT info_to_show FROM dataset_to_push WHERE (id = '" + did + "' AND area_code = '" + area + "' AND (UNIX_TIMESTAMP(" + Date.now() + ")-UNIX_TIMESTAMP(`changed_at`) < 86400 ))", function (error, result) {
                 var rst_false = {
                     result: '',
