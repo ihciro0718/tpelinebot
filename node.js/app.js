@@ -905,7 +905,7 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
     console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
     logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
     try{
-        pool.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')", function (error, result) {
+        pool.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", "+MysqlFormat+" ,'1')", function (error, result) {
             var rst_false = {
                 result: '',
                 errorMessage: ''
