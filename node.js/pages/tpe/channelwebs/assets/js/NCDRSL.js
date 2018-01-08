@@ -51,7 +51,7 @@ window.addEventListener("load", function (e) {
             method: 'GET',
             async: true
         }).done(function (data) {
-            if (data['result'] === true) {
+            if (data['result'] == true) {
                 desc.innerHTML = '<span class="subc__support">如您要取消訂閱' + SUBSCRIBE_TYPE[payload['datasetId']] + '資訊，請按下「我要取消訂閱」。</span>';
                 infoaction.innerHTML = '<button class="sbtn--cancel" data-mid="' + payload['memberId'] + '" value="' + payload['datasetId'] + '" onclick="deleteSub(this);">我要取消訂閱</button>';
                 return;
