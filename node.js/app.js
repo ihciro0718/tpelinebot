@@ -65,219 +65,32 @@ var pool = mysql.createPool({
     password: db.password,
     database: db.database //要抓的database名稱
 });
-pool.getConnection(function (error) {
-    // mysql
-    if (!!error) {
-        logger.info('Database Error');
-        console.log('Database Error');
-        logger.info(error);
-        console.log(error);
+
+function handleError (err) {
+  if (err) {
+    // 如果是連接斷開，自動重新連接
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+      connect();
     } else {
-        logger.info('Database Connected');
-        console.log('Database Connected');       
+      logger.info(err.stack || err);
     }
-});
-/*
-app.get('/delete', function (request, response) { //顯示所有資料庫
-    connection.query("DELETE FROM subscription_container" , function (error, result) {
-        //callback
+  }
+};
+function connect(){
+    pool.getConnection(function (error) {
+        // mysql
         if (!!error) {
-            console.log('Error in the query');
+            logger.info('Database Error');
+            console.log('Database Error');
+            logger.info(error);
             console.log(error);
-            response.send(error)
-        } else {
-            console.log('Successful query');
-            console.log(result);
-            response.send("Successful");
+        }else{
+            logger.info('Database Connected');
+            console.log('Database Connected');       
         }
     });
+};
 
-});
-app.get('/resultdata', function (request, response) { //顯示所有資料庫
-    connection.query("SELECT * FROM subscription_container" , function (error, result) {
-        //callback
-        if (!!error) {
-            console.log('Error in the query');
-            console.log(error);
-            response.send(error)
-        } else {
-            console.log('Successful query');
-            console.log(result);
-            response.send(result);
-        }
-    });
-});*/
-//mysql airBox----------------------------------------------------------------------------------------------------------------
-/*
-app.get('/AirBoxData', function (request, response) {
-    logger.info('GET /setting request (AirBoxData)');
-    request.header("Content-Type", 'text/html');
-    var deviceInfoList = [];
-    var TPEschoolsList = [];
-    var rst = [];
-    var airboxData;
-    var taiwanGeocodeTpe = [
-        { k: '6300100', v: '松山區' },
-        { k: '6300200', v: '信義區' },
-        { k: '6300300', v: '大安區' },
-        { k: '6300400', v: '中山區' },
-        { k: '6300500', v: '中正區' },
-        { k: '6300600', v: '大同區' },
-        { k: '6300700', v: '萬華區' },
-        { k: '6300800', v: '文山區' },
-        { k: '6300900', v: '南港區' },
-        { k: '6301000', v: '內湖區' },
-        { k: '6301100', v: '士林區' },
-        { k: '6301200', v: '北投區' },
-    ];
-    fs.readFile(__dirname +'/pages/tpe/channelwebs/air_pollutioninfo/AirBoxData_V2.gz', function (err, data) {
-        if (err) { //如果有錯誤就列印訊息並離開程式
-            console.log('AirBoxData檔案讀取錯誤。');
-            logger.info('AirBoxData檔案讀取錯誤。');
-        }
-        else {
-            airboxData = JSON.parse(data.toString());
-            fs.readFile(__dirname +'/pages/tpe/channelwebs/air_pollutioninfo/TPEschools.txt', 'utf-8', function (err, data) {
-                if (err) { //如果有錯誤就列印訊息並離開程式
-                    console.log('TPEschools檔案讀取錯誤。');
-                    logger.info('TPEschools檔案讀取錯誤。');
-                }
-                else {
-                    ConvertToTable(data, function (csvBody) {
-                        for (var row = 0; row < csvBody.length; row++) {
-
-                            if (csvBody[row][1] == '國語實小') {
-                                console.log(csvBody[row][1]);
-                                console.log(csvBody[row][1]);
-                                csvBody[row][1] = '國語實驗小學';
-                            }
-                            else if (csvBody[row][1] == '私立靜心小學') {
-                                csvBody[row][1] = '私立靜心國民中小學';
-                            }
-                            else if (csvBody[row][1] == '私立華興小學') {
-                                csvBody[row][1] = '華興國小';
-                            }
-                            else if (csvBody[row][1] == '私立薇閣小學') {
-                                csvBody[row][1] = '薇閣國小';
-                            }
-                            else if (csvBody[row][1] == '私立新民小學') {
-                                csvBody[row][1] = '新民國小';
-                            }
-                            else if (csvBody[row][1] == '私立光仁小學') {
-                                csvBody[row][1] = '光仁國小';
-                            }
-                            else if (csvBody[row][1] == '市大附小') {
-                                csvBody[row][1] = '台北市立大學附設實驗國小';
-                            }
-                            else if (csvBody[row][1] == '私立復興實驗高中') {
-                                csvBody[row][1] = '私立復興實驗中學';
-                            }
-                            TPEschoolsList[row] = { schoolName: '', deviceDist: '', gps: { lat: '', lng: '' } };
-                            TPEschoolsList[row]['schoolName'] = csvBody[row][1];
-                            TPEschoolsList[row]['schoolDist'] = String(csvBody[row][3]).substr(3, 3);
-                            TPEschoolsList[row]['gps']['lat'] = parseFloat(csvBody[row][5]);
-                            TPEschoolsList[row]['gps']['lng'] = parseFloat(csvBody[row][6]);
-                        }
-                    });
-                }
-                fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/AirBoxDevicesList.txt', 'utf-8', function (err, data) {
-                    if (err) { //如果有錯誤就列印訊息並離開程式
-                        console.log('AirBoxDevicesList檔案讀取錯誤。');
-                        logger.info('AirBoxDevicesList檔案讀取錯誤。');
-                    }
-                    else {
-                        ConvertToTable(data, function (csvBody) {
-                            for (var row = 0; row < csvBody.length; row++) {
-                                deviceInfoList[row] = { deviceId: '', deviceDist: '', 'gps': { lat: '', lng: '' } }
-                                deviceInfoList[row]['deviceId'] = csvBody[row][0];
-                                deviceInfoList[row]['devicePos'] = csvBody[row][1];
-                            }
-
-                        });
-
-                        for (var i = 0; i < deviceInfoList.length; i++) {
-                            TPEschoolsList.forEach(function (scl) {
-                                if (String(deviceInfoList[i]['devicePos']).indexOf(scl['schoolName']) > -1) {
-                                    deviceInfoList[i]['deviceDist'] = scl['schoolDist'];
-                                    deviceInfoList[i]['gps']['lat'] = scl['gps']['lat'];
-                                    deviceInfoList[i]['gps']['lng'] = scl['gps']['lng'];
-                                }
-                            })
-                        }
-                        airboxData['entries'] = airboxData['entries'].sort(function (a, b) {
-                            //小到大排序
-                            return a['time'] > b['time'] ? 1 : -1;
-                        });
-                        console.log(JSON.stringify(airboxData['entries'][0]));
-                        for (var i = 0, j = 0; i < deviceInfoList.length; i++) {
-                            rst[j] = { deviceName: '', deviceDist: '', gps: { lat: '', lng: '' }, recoreTime: '', pm25: '' };
-                            rst[j]['deviceName'] = deviceInfoList[i]['devicePos'];
-                            rst[j]['deviceDist'] = deviceInfoList[i]['deviceDist'];
-                            rst[j]['gps'] = deviceInfoList[i]['gps'];
-                            airboxData['entries'].forEach(function (abd) {
-                                if (abd['device_id'] == deviceInfoList[i]['deviceId']) {
-                                    rst[j]['recoreTime'] = abd['time'];
-                                    rst[j]['pm25'] = abd['s_d0'];
-                                }
-                            });
-                            j++;
-                        }
-                        taiwanGeocodeTpe.forEach(function (row) {
-                            var toSave = [];
-                            var datatoDB = { result: '' };
-                            var j = 0;
-                            for (var i = 0; i < rst.length; i++) {
-                                if (row.v == rst[i]['deviceDist'] && rst[i]['pm25'] != "") {
-                                    toSave[j] = rst[i];
-                                    j++;
-                                }
-                            }
-                            datatoDB['result'] = toSave;
-                            var datasetId = 'airbox'
-                            var info = JSON.stringify(datatoDB);
-                            var areaCode = row.k;
-                            var tblName = 'dataset_to_display';
-                            saveToDB(datasetId, areaCode, info, tblName);
-                        });
-                        response.send(JSON.stringify(rst));
-                    }
-                });
-            });
-        }
-    });
-});
-*/
-function saveToDB(did, ac, info, tn) {
-    console.log("saveToDB: " + tn);
-    console.log("info " + info);
-    pool.query("SELECT * FROM " + tn + " WHERE (id = '" + did + "' AND area_code = '" + ac + "')", function (error, result) {
-        if (error) {
-            logger.info('saveToDB '+error);
-            console.log(error)
-        };
-        var sql;
-        var MysqlFormat = new Date().toISOString().
-            replace(/T/, ' ').      // replace T with a space
-            replace(/\..+/, '');
-        MysqlFormat = NOW();
-        logger.info("MysqlFormat: " + MysqlFormat);
-        if (result == '') {
-            sql = "INSERT INTO " + tn + " VALUES ('" + did + "','" + ac + "','" + info + "'," + MysqlFormat + "," + MysqlFormat + ")";
-        } else {
-            sql = "UPDATE " + tn + " SET info_to_show = '" + info + "' , changed_at = " + MysqlFormat + " WHERE (id = '" + did + "' AND area_code = '" + ac + "')";
-        }
-        pool.query(sql, function (error, result) {
-            console.log(sql);
-            if (error) {
-                console.log(error);
-                logger.info('saveToDB query '+error);
-            }else {
-                console.log(result.affectedRows + " record(s) updated/insert");
-            }
-        });
-    });
-}
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/login/:page", function (request, response) {
     logger.info('-------------------------------------------login-------------------------------------------');
     try{
@@ -297,6 +110,7 @@ app.get("/login/:page", function (request, response) {
 var choose = 0; //判斷空氣盒子和防汛
 app.get('/air_pollutioninfo', function (request, response) {
     logger.info('GET /setting request (空氣盒子)');
+    connect();
     choose = 1;
     //pathname 會包含state跟code  其中的code會是我們所需要的Authorization code然後state會是你在上面login跳轉網頁的url所設定的state state本身應該是用來防止攻擊驗證是不是本身的訊息的
     var pathname = url.parse(request.url).query;
@@ -387,6 +201,7 @@ app.get('/air_pollutioninfo' + '/setup_airbox_subinfo', function (request, respo
 
 app.get('/flood_control', function (request, response) {
     console.log('GET /setting request floodControl');
+    connect();
     choose = 2;
     //pathname 會包含state跟code  其中的code會是我們所需要的Authorization code然後state會是你在上面login跳轉網頁的url所設定的state state本身應該是用來防止攻擊驗證是不是本身的訊息的
     var pathname = url.parse(request.url).query;
@@ -663,6 +478,7 @@ function addMember(mid, displayName, picUrl, statusMsg) {
             return rst;
         }
     });
+    pool.close();
 }
 //restfulapi
 app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
@@ -678,6 +494,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
             result: '',
             errorMessage: ''
         };
+        logger.info(typeof(rst_false));
         if (authToken == undefined) {
             console.log("No authorization key");
             rst_false = {
@@ -875,6 +692,7 @@ function listSubscriptionContainer(mid, did, callback) {
                 }
             }
         });
+        
     }catch(err){
         console.log('result != "" ');
         logger.info('result != "" ');
@@ -945,7 +763,7 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
     var MysqlFormat = new Date().toISOString().
         replace(/T/, ' ').      // replace T with a space
         replace(/\..+/, '');
-    MysqlFormat = NOW();
+    MysqlFormat = 'NOW()';
     logger.info(MysqlFormat);
     console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
     logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
@@ -1047,7 +865,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
         var MysqlFormat = new Date().toISOString().
             replace(/T/, ' ').      // replace T with a space
             replace(/\..+/, '');
-        MysqlFormat = NOW();
+        MysqlFormat = 'NOW()';
         listSubscriptionContainer(mid, did, function (origRaw) {
             switch (todo) {
                 case 'cancelArea':
@@ -1342,6 +1160,8 @@ app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
 function listPDatasetInfoToShow(did, area, callback) {
     logger.info('listPDatasetInfoToShow');
     console.log(did + " AND " + area);
+    console.log("SELECT info_to_show FROM dataset_to_push WHERE (id = '" + did + "' AND area_code = '" + area + "' AND (UNIX_TIMESTAMP(" + Date.now() + ")-UNIX_TIMESTAMP(`changed_at`) < 86400 ))");
+    logger.info("SELECT info_to_show FROM dataset_to_push WHERE (id = '" + did + "' AND area_code = '" + area + "' AND (UNIX_TIMESTAMP(" + Date.now() + ")-UNIX_TIMESTAMP(`changed_at`) < 86400 ))");
     pool.query("SELECT info_to_show FROM dataset_to_push WHERE (id = '" + did + "' AND area_code = '" + area + "' AND (UNIX_TIMESTAMP(" + Date.now() + ")-UNIX_TIMESTAMP(`changed_at`) < 86400 ))", function (error, result) {
         var rst_false = {
             result: '',
