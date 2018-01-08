@@ -726,7 +726,7 @@ app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response
         console.log(err);
         logger.info(err);
     }
-});
+});//
 function addSubscriptionContainer(mid, did, sdetail, callback) {
     logger.info('function addSubscriptionContainer');
     console.log('function addSubscriptionContainer');
