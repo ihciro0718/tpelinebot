@@ -537,7 +537,9 @@ function listDatasetInfoToShow(did, area, callback) {
                                 result: false,
                                 errorMessage: 'no subscription yet'
                             };
+                            connection.release();
                             callback(rst_false);
+                            return;
                         } else {
                             console.log('Successful query');
                             logger.info('Successful query');
@@ -546,7 +548,9 @@ function listDatasetInfoToShow(did, area, callback) {
                                 'errorMessage': 'success',
                                 'data': JSON.stringify(result)
                             };
+                            connection.release();
                             callback(rst_true);
+                            return;
                         }
                     } catch (err) {
                         console.log('result != "" ');
@@ -624,54 +628,65 @@ function listSubscriptionContainer(mid, did, callback) {
     console.log('function listSubscriptionContainer');
     logger.log('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
     console.log('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
-    pool.getConnection(function (error, connection) {
-        // mysql
-        if (!!error) {
-            logger.info('Database Error');
-            console.log('Database Error');
-            logger.info(error);
-            console.log(error);
-        } else {
-            logger.info('Database Connected');
-            console.log('Database Connected');
-            connection.query("SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')", function (error, result) {
-                var rst_false = {
-                    result: '',
-                    errorMessage: ''
-                };
-                var rst_true = {
-                    result: '',
-                    errorMessage: '',
-                    data: ''
-                };
-                if (error) {
-                    logger.info(error);
-                    console.log(error);
-                } else {
-                    if (result == '') {
-                        console.log('Error in the query(listSubscriptionContainer)');
-                        logger.info('Error in the query(listSubscriptionContainer)');
-                        rst_false = {
-                            result: false,
-                            errorMessage: 'no subscription yet'
-                        };
-                        callback(rst_false);
-                    } else {
-                        console.log('Successful query');
-                        logger.info('Successful query');
-                        rst_true = {
-                            'result': true,
-                            'errorMessage': 'already subscribed',
-                            'data': JSON.stringify(result)
-                        };
-                        callback(rst_true);
-                    }
+    dbquery(0);
+    function dbquery(times) {
+        pool.getConnection(function (error, connection) {
+            // mysql
+            if (!!error) {
+                logger.info('Database Error');
+                console.log('Database Error');
+                logger.info(error);
+                console.log(error);
+                if(times<=10){
+                    connection.release();
+                    logger.info(times);
+                    dbquery(times++);
                 }
-                connection.release();
-            });
-
-        }
-    });
+            } else {
+                logger.info('Database Connected');
+                console.log('Database Connected');
+                connection.query("SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')", function (error, result) {
+                    var rst_false = {
+                        result: '',
+                        errorMessage: ''
+                    };
+                    var rst_true = {
+                        result: '',
+                        errorMessage: '',
+                        data: ''
+                    };
+                    if (error) {
+                        logger.info(error);
+                        console.log(error);
+                    } else {
+                        if (result == '') {
+                            console.log('Error in the query(listSubscriptionContainer)');
+                            logger.info('Error in the query(listSubscriptionContainer)');
+                            rst_false = {
+                                result: false,
+                                errorMessage: 'no subscription yet'
+                            };
+                            connection.release();
+                            callback(rst_false);
+                            return;
+                        } else {
+                            console.log('Successful query');
+                            logger.info('Successful query');
+                            rst_true = {
+                                'result': true,
+                                'errorMessage': 'already subscribed',
+                                'data': JSON.stringify(result)
+                            };
+                            connection.release();
+                            callback(rst_true);
+                            return;
+                        }
+                    }
+                    connection.release();
+                });
+            }
+        });
+    };
 };
 app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response) {
     logger.info('POST addSubscriptionContainer');
@@ -771,7 +786,9 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
                             result: false,
                             errorMessage: 'errorMessage'
                         };
+                        connection.release();
                         callback(rst_false);
+                        return;
                     } else {
                         console.log('Successful query');
                         logger.info('Successful query');
@@ -780,7 +797,9 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
                             'errorMessage': 'success',
                             'data': JSON.stringify(result)
                         };
+                        connection.release();
                         callback(rst_true);
+                        return;
                     }
                 }
                 connection.release();
@@ -1011,7 +1030,9 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                                     result: false,
                                     errorMessage: 'Update failed'
                                 };
+                                connection.release();
                                 callback(rst_false);
+                                return;
                             }
                             else {
                                 console.log('subscription container updated');
@@ -1020,7 +1041,9 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                                     'errorMessage': 'subscription container updated',
                                     'data': JSON.stringify(result)
                                 };
+                                connection.release();
                                 callback(rst_true);
+                                return;
                             }
                         }
                         connection.release();
@@ -1112,7 +1135,9 @@ function listDataset(did, area, callback) {
                             result: false,
                             errorMessage: 'no subscription yet'
                         };
+                        connection.release();
                         callback(rst_false);
+                        return;
                     }
                     else {
                         console.log('Successful query');
@@ -1121,7 +1146,9 @@ function listDataset(did, area, callback) {
                             'errorMessage': 'success',
                             'data': JSON.stringify(result)
                         };
+                        connection.release();
                         callback(rst_true);
+                        return;
                     }
                 }
                 connection.release();
@@ -1201,7 +1228,9 @@ function listPDatasetInfoToShow(did, area, callback) {
                             result: false,
                             errorMessage: 'no subscription yet'
                         };
+                        connection.release();
                         callback(rst_false);
+                        return;
                     }
                     else {
                         console.log('Successful query');
@@ -1210,7 +1239,9 @@ function listPDatasetInfoToShow(did, area, callback) {
                             'errorMessage': 'success',
                             'data': JSON.stringify(result)
                         };
+                        connection.release();
                         callback(rst_true);
+                        return;
                     }
                 }
                 connection.release();
@@ -1308,7 +1339,9 @@ function deleteSubscriptionContainer(mid, did, callback) {
                                 result: false,
                                 errorMessage: 'Invalid input'
                             };
+                            connection.release();
                             callback(rst_false);
+                            return;
                         } else {
                             console.log('subscription container deleted');
                             logger.info('subscription container deleted');
@@ -1317,7 +1350,9 @@ function deleteSubscriptionContainer(mid, did, callback) {
                                 'errorMessage': 'subscription container deleted',
                                 'data': JSON.stringify(result)
                             };
+                            connection.release();
                             callback(rst_true);
+                            return;
                         }
                     }
                     connection.release();
