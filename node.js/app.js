@@ -442,10 +442,8 @@ function GetUserProfile(choose, pathname, callback) {
 
 //restfulapi
 app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
-    logger.info('GET /setting request listDatasetInfoToShow');
-    console.log('GET /setting request listDatasetInfoToShow');
-    logger.info("listDatasetInfoToShow_queryquery: " + JSON.stringify(request.query));
-    console.log("listDatasetInfoToShow_query: " + JSON.stringify(request.query));
+    logger.info('GET /setting request listDatasetInfoToShow_query');
+    console.log('GET /setting request listDatasetInfoToShow_query');
     try {
         var authToken = request.query.authToken;
         var datasetId = request.query.datasetId;
@@ -456,6 +454,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         };
         if (authToken == undefined) {
             console.log("No authorization key");
+            logger.info("No authorization key");
             rst_false = {
                 result: false,
                 errorMessage: 'No authorization key'
@@ -464,6 +463,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         }
         if (datasetId == undefined) {
             console.log("No dataset id");
+            logger.info("No dataset id");
             rst_false = {
                 result: false,
                 errorMessage: 'No dataset id'
@@ -472,6 +472,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         }
         if (areaCode == undefined) {
             console.log("No areaCode id");
+            logger.info("No areaCode id");
             rst_false = {
                 result: false,
                 errorMessage: 'No areaCode id'
@@ -480,6 +481,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         }
         if (authToken != config.AUTH_TOKEN) {
             console.log("Authorization fail");
+            logger.info("Authorization fail");
             rst_false = {
                 result: false,
                 errorMessage: 'Authorization fail'
@@ -488,6 +490,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         }
         listDatasetInfoToShow(datasetId, areaCode, function (data) {
             console.log("listDatasetInfoToShow_sendData: " + JSON.stringify(data));
+            logger.info("listDatasetInfoToShow_sendData: " + JSON.stringify(data));
             response.send(data);
         });
         //response.end();
