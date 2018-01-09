@@ -14,9 +14,7 @@ var hashtable = require(__dirname + '/hashtable.js');
 // 建立 express service
 var express = require('express');  // var 宣告express物件， require請求
 var app = express();
-var fs = require('fs');
-var gracefulFs = require('graceful-fs');
-gracefulFs.gracefulify(fs);
+var fs = require('graceful-fs');
 
 var port = process.env.PORT || 443;  //run 在443 port上
 var privateKey = require('fs').readFileSync('/etc/letsencrypt/live/linetestservice.gov.taipei/privkey.pem');
@@ -90,8 +88,7 @@ app.get("/login/:page", function (request, response) {
         //下面的跳轉網頁會跳轉到line登入的頁面，同時會在那邊進行登入 然後跳轉到conig的redirect_uri
         if (page == 'airbox') {
             response.redirect('https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=' + config.channel_id + '&redirect_uri=' + config.redirect_uri + 'air_pollutioninfo' + '&state=reportAuth&scope=openid%20profile&nonce=myapp');
-        }
-        else if (page == 'ncdr') {
+        } else if (page == 'ncdr') {
             response.redirect('https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=' + config.channel_id + '&redirect_uri=' + config.redirect_uri + 'flood_control' + '&state=reportAuth&scope=openid%20profile&nonce=myapp');
         }
     } catch (err) {
@@ -101,7 +98,7 @@ app.get("/login/:page", function (request, response) {
 });
 var choose = 0; //判斷空氣盒子和防汛
 app.get('/air_pollutioninfo', function (request, response) {
-    logger.info('GET /setting request (空氣盒子)');
+    logger.info('GET/(空氣盒子)');
     choose = 1;
     //pathname 會包含state跟code  其中的code會是我們所需要的Authorization code然後state會是你在上面login跳轉網頁的url所設定的state state本身應該是用來防止攻擊驗證是不是本身的訊息的
     var pathname = url.parse(request.url).query;
@@ -124,6 +121,7 @@ app.get('/air_pollutioninfo', function (request, response) {
                     //'access_token': profile.access_token,
                 }
                 console.log(profile_data);
+                var airpollutioninfo;
                 request.header("Content-Type", 'text/html');
                 fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/index.htm', 'utf8', function (err, data) {
                     if (err) {
@@ -131,14 +129,12 @@ app.get('/air_pollutioninfo', function (request, response) {
                         this.res.send(err);
                         return;
                     }
-                    console.log("123: " + mid);
                     data = data + '<script type="text/javascript"> var mid = "' + mid + '"; </script>';
                     this.res.send(data);
                 }.bind({ req: request, res: response }));
             }
         });
-    }
-    else {
+    }else {
         console.log("false");
         logger.info('取得使用者資訊錯誤。');
         response.send("<h1>無法取得權限<h1>");
@@ -151,46 +147,63 @@ app.get('/air_pollutioninfo', function (request, response) {
         }.bind({ req: request, res: response }));*/
     }
 });
+var airMap;
 app.get('/air_pollutioninfo' + '/air_map', function (request, response) {
-    logger.info('GET /setting request (GoogleMap)');
+    logger.info('GET/(GoogleMap)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/air_map.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (airMap == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/air_map.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            airMap = data;
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        response.send(airMap);
+    }
 });
+var activeSuggestion;
 app.get('/air_pollutioninfo' + '/active_suggestion', function (request, response) {
-    logger.info('GET /setting request (active_suggestion)');
+    logger.info('GET/(active_suggestion)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/active_suggestion.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (activeSuggestion == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/active_suggestion.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            activeSuggestion = data
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    }else{
+        response.send(activeSuggestion);
+    }
 });
+var setupAirboxSubinfo;
 app.get('/air_pollutioninfo' + '/setup_airbox_subinfo', function (request, response) {
-    logger.info('GET /setting request (setup_airbox_subinfo)');
+    logger.info('GET/(setup_airbox_subinfo)');
     request.header("Content-Type", 'text/html');
-    //var fs = require('fs');
+    if(setupAirboxSubinfo == undefined){
     fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/setup_airbox_subinfo.htm', 'utf8', function (err, data) {
         if (err) {
             logger.info(err);
             this.res.send(err);
             return;
         }
+        setupAirboxSubinfo = data;
         this.res.send(data);
     }.bind({ req: request, res: response }));
+    }else{
+        response.send(activeSuggestion);
+    }
 });
 
 app.get('/flood_control', function (request, response) {
-    console.log('GET /setting request floodControl');
+    logger.info('GET/(floodControl)');
     choose = 2;
     //pathname 會包含state跟code  其中的code會是我們所需要的Authorization code然後state會是你在上面login跳轉網頁的url所設定的state state本身應該是用來防止攻擊驗證是不是本身的訊息的
     var pathname = url.parse(request.url).query;
@@ -219,21 +232,18 @@ app.get('/flood_control', function (request, response) {
                 if (err) {
                     this.res.send(err);
                 }
-                console.log("mid: " + mid);
                 data = data + '<script type="text/javascript"> var mid = "' + mid + '"; </script>';
                 this.res.send(data);
             }.bind({ req: request, res: response }));
         });
-
-    }
-    else {
+    }else {
         console.log("false");
         logger.info('取得使用者資訊錯誤。');
         response.send("<h1>無法取得權限<h1>");
     }
 });
 app.get('/get_center_control', function (request, response) {
-    logger.info('GET /setting request (get_center_control)');
+    logger.info('GET/(get_center_control)');
     /*var url = 'http://210.59.250.198/DisasterOperationSystemWebAPIUnite/api/DisasterServiceApi/GetCenterControl';
     //request.header("Content-Type", 'application/json');
     response.writeHead(200, {"Content-Type": 'application/json'});
@@ -324,21 +334,27 @@ app.get('/get_disaster_stat/:id', function (request, response) {
     });
     req.end();
 });
+var floodcontrolEOC;
 app.get('/flood_control' + '/EOC', function (request, response) {
-    logger.info('GET /setting request (EOC)');
+    logger.info('GET/(EOC)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/EOC.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (floodcontrolEOC == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/EOC.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            floodcontrolEOC = data;
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        response.send(floodcontrolEOC);
+    }
 });
 var NCDRSubLists;
 app.get('/flood_control' + '/NCDRSubLists', function (request, response) {
-    logger.info('GET /setting request (NCDRSubLists)');
+    logger.info('GET/(NCDRSubLists)');
     request.header("Content-Type", 'text/html');
     if (NCDRSubLists == undefined) {
         fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRSubLists.htm', 'utf8', function (err, data) {
@@ -352,12 +368,12 @@ app.get('/flood_control' + '/NCDRSubLists', function (request, response) {
             this.res.send(data);
         }.bind({ req: request, res: response }));
     } else {
-        this.res.send(NCDRSubLists);
+        response.send(NCDRSubLists);
     }
 });
 var NCDRFlood;
 app.get('/flood_control' + '/NCDRFlood', function (request, response) {
-    logger.info('GET /setting request (NCDRFlood)');
+    logger.info('GET/(NCDRFlood)');
     request.header("Content-Type", 'text/html');
     if (NCDRFlood == undefined) {
         fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRFlood.htm', 'utf8', function (err, data) {
@@ -366,10 +382,11 @@ app.get('/flood_control' + '/NCDRFlood', function (request, response) {
                 this.res.send(err);
                 return;
             }
+            NCDRFlood = data;
             this.res.send(data);
         }.bind({ req: request, res: response }));
     } else {
-        this.res.send(NCDRSubLists);
+        response.send(NCDRFlood);
     }
 });
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -648,8 +665,6 @@ function listSubscriptionContainer(mid, did, callback) {
     console.log('function listSubscriptionContainer');
     logger.info('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
     console.log('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
-    //dbquery(0);
-    //function dbquery(times) {
     var timestamp = new Date().getTime();
     logger.info('1.' + timestamp);
     pool.getConnection(function (error, connection) {
@@ -660,13 +675,6 @@ function listSubscriptionContainer(mid, did, callback) {
             console.log('Database Error');
             logger.info(error);
             console.log(error);
-            /*
-            if(times<=10){
-                connection.release();
-                logger.info(times);
-                dbquery(times++);
-            }
-            */
         } else {
             logger.info('Database Connected');
             console.log('Database Connected');
@@ -718,11 +726,10 @@ function listSubscriptionContainer(mid, did, callback) {
             });
         }
     }.bind({ timestamp: timestamp }));
-    //};
 };
 app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response) {
-    logger.info('POST addSubscriptionContainer');
-    console.log('POST addSubscriptionContainer');
+    logger.info('POST/ (addSubscriptionContainer)');
+    console.log('POST/ (addSubscriptionContainer)');
     logger.info("addSubscriptionContainer_query: " + JSON.stringify(request.body));
     console.log("addSubscriptionContainer_query: " + JSON.stringify(request.body));
     try {
@@ -776,7 +783,7 @@ app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response
         console.log(err);
         logger.info(err);
     }
-});//
+});
 function addSubscriptionContainer(mid, did, sdetail, callback) {
     logger.info('function addSubscriptionContainer');
     console.log('function addSubscriptionContainer');
@@ -836,9 +843,7 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
                 }
                 connection.release();
             });
-
         }
-
     });
 };
 
@@ -1087,7 +1092,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
     }
 };
 app.get('/restfulapi/v1/listDataset/', function (request, response) {
-    logger.info('GET listDataset');
+    logger.info('GET/(listDataset)');
     console.log("listDataset: " + JSON.stringify(request.query));
     var authToken = request.query.authToken;
     var datasetId = request.query.datasetId;
@@ -1190,7 +1195,7 @@ function listDataset(did, area, callback) {
 
 }
 app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
-    logger.info('GET listPDatasetInfoToShow');
+    logger.info('GET/(listPDatasetInfoToShow)');
     console.log("listPDatasetInfoToShow: " + JSON.stringify(request.query));
     var authToken = request.query.authToken;
     var datasetId = request.query.datasetId;
@@ -1263,8 +1268,7 @@ function listPDatasetInfoToShow(did, area, callback) {
                         connection.release();
                         callback(rst_false);
                         return;
-                    }
-                    else {
+                    }else {
                         console.log('Successful query');
                         rst_true = {
                             'result': true,
@@ -1284,7 +1288,7 @@ function listPDatasetInfoToShow(did, area, callback) {
 
 }
 app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, response) {
-    logger.info('deleteSubscriptionContainer');
+    logger.info('delete/ (SubscriptionContainer)');
     try {
         var authToken = request.body.authToken;
         var datasetId = request.body.datasetId;
@@ -1335,9 +1339,8 @@ app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, res
             response.send(data);
         });
     } catch (err) {
-
+        logger.info(err);
     }
-
 });
 function deleteSubscriptionContainer(mid, did, callback) {
     logger.info('function deleteSubscriptionContainer');

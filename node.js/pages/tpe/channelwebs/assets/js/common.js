@@ -78,7 +78,7 @@ function addSub(sel) {
         };
         payload['subscribeDetail'] = JSON.stringify(detailData);
     }else {
-        payload['subscribeDetail'] = '';
+        payload['subscribeDetail'] = null;
     }
     console.log(payload);
     //var api = API_HOST + SRU + '/addSubscriptionContainer/';
