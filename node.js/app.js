@@ -14,9 +14,7 @@ var hashtable = require(__dirname + '/hashtable.js');
 // 建立 express service
 var express = require('express');  // var 宣告express物件， require請求
 var app = express();
-var fs = require('fs');
-var gracefulFs = require('graceful-fs');
-gracefulFs.gracefulify(fs);
+var fs = require('graceful-fs');
 
 var port = process.env.PORT || 443;  //run 在443 port上
 var privateKey = require('fs').readFileSync('/etc/letsencrypt/live/linetestservice.gov.taipei/privkey.pem');
@@ -35,10 +33,10 @@ var bodyParser = require('body-parser');  //JSON解析body的資料
 var mysql = require('mysql'); // mysql
 var url = require("url");
 var fs = require('graceful-fs');
-var config = fs.readFileSync(__dirname+'/config.json', 'utf8');
+var config = fs.readFileSync(__dirname + '/config.json', 'utf8');
 config = JSON.parse(config);
 var jwtDecode = require('jwt-decode');
-var db = require(__dirname+'/taipeidbtest');
+var db = require(__dirname + '/taipeidbtest');
 
 app.use(bodyParser.urlencoded({  //app使用bodyParser來做解析
     extended: true
@@ -50,21 +48,23 @@ app.all('*', function (req, res, next) {
     res.header('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type');
     next();
 });
-app.use(express.static(__dirname+'/pages/tpe/channelwebs/assets'));
+app.use(express.static(__dirname + '/pages/tpe/channelwebs/assets'));
 
-process.on('uncaughtException', function(e) {
-                logger.info('process.on==============================================================');
-                logger.error(e);
+process.on('uncaughtException', function (e) {
+    logger.info('process.on==============================================================');
+    logger.error(e);
 });
 
 //mysql----------------------------------------------------------------------------------------------------------------
 var pool = mysql.createPool({
-    connectionLimit : 100,
+    connectionLimit: 100,
     host: db.host, //如果database在另一台機器上，要改這裡
     user: db.user,
     password: db.password,
-    database: db.database //要抓的database名稱
+    database: db.database, //要抓的database名稱
+    waitForConnections: true
 });
+/*
 pool.getConnection(function (error) {
     // mysql
     if (!!error) {
@@ -74,229 +74,31 @@ pool.getConnection(function (error) {
         console.log(error);
     } else {
         logger.info('Database Connected');
-        console.log('Database Connected');       
+        console.log('Database Connected');
+        
+        connection.release();
     }
 });
-/*
-app.get('/delete', function (request, response) { //顯示所有資料庫
-    connection.query("DELETE FROM subscription_container" , function (error, result) {
-        //callback
-        if (!!error) {
-            console.log('Error in the query');
-            console.log(error);
-            response.send(error)
-        } else {
-            console.log('Successful query');
-            console.log(result);
-            response.send("Successful");
-        }
-    });
-
-});
-app.get('/resultdata', function (request, response) { //顯示所有資料庫
-    connection.query("SELECT * FROM subscription_container" , function (error, result) {
-        //callback
-        if (!!error) {
-            console.log('Error in the query');
-            console.log(error);
-            response.send(error)
-        } else {
-            console.log('Successful query');
-            console.log(result);
-            response.send(result);
-        }
-    });
-});*/
-//mysql airBox----------------------------------------------------------------------------------------------------------------
-/*
-app.get('/AirBoxData', function (request, response) {
-    logger.info('GET /setting request (AirBoxData)');
-    request.header("Content-Type", 'text/html');
-    var deviceInfoList = [];
-    var TPEschoolsList = [];
-    var rst = [];
-    var airboxData;
-    var taiwanGeocodeTpe = [
-        { k: '6300100', v: '松山區' },
-        { k: '6300200', v: '信義區' },
-        { k: '6300300', v: '大安區' },
-        { k: '6300400', v: '中山區' },
-        { k: '6300500', v: '中正區' },
-        { k: '6300600', v: '大同區' },
-        { k: '6300700', v: '萬華區' },
-        { k: '6300800', v: '文山區' },
-        { k: '6300900', v: '南港區' },
-        { k: '6301000', v: '內湖區' },
-        { k: '6301100', v: '士林區' },
-        { k: '6301200', v: '北投區' },
-    ];
-    fs.readFile(__dirname +'/pages/tpe/channelwebs/air_pollutioninfo/AirBoxData_V2.gz', function (err, data) {
-        if (err) { //如果有錯誤就列印訊息並離開程式
-            console.log('AirBoxData檔案讀取錯誤。');
-            logger.info('AirBoxData檔案讀取錯誤。');
-        }
-        else {
-            airboxData = JSON.parse(data.toString());
-            fs.readFile(__dirname +'/pages/tpe/channelwebs/air_pollutioninfo/TPEschools.txt', 'utf-8', function (err, data) {
-                if (err) { //如果有錯誤就列印訊息並離開程式
-                    console.log('TPEschools檔案讀取錯誤。');
-                    logger.info('TPEschools檔案讀取錯誤。');
-                }
-                else {
-                    ConvertToTable(data, function (csvBody) {
-                        for (var row = 0; row < csvBody.length; row++) {
-
-                            if (csvBody[row][1] == '國語實小') {
-                                console.log(csvBody[row][1]);
-                                console.log(csvBody[row][1]);
-                                csvBody[row][1] = '國語實驗小學';
-                            }
-                            else if (csvBody[row][1] == '私立靜心小學') {
-                                csvBody[row][1] = '私立靜心國民中小學';
-                            }
-                            else if (csvBody[row][1] == '私立華興小學') {
-                                csvBody[row][1] = '華興國小';
-                            }
-                            else if (csvBody[row][1] == '私立薇閣小學') {
-                                csvBody[row][1] = '薇閣國小';
-                            }
-                            else if (csvBody[row][1] == '私立新民小學') {
-                                csvBody[row][1] = '新民國小';
-                            }
-                            else if (csvBody[row][1] == '私立光仁小學') {
-                                csvBody[row][1] = '光仁國小';
-                            }
-                            else if (csvBody[row][1] == '市大附小') {
-                                csvBody[row][1] = '台北市立大學附設實驗國小';
-                            }
-                            else if (csvBody[row][1] == '私立復興實驗高中') {
-                                csvBody[row][1] = '私立復興實驗中學';
-                            }
-                            TPEschoolsList[row] = { schoolName: '', deviceDist: '', gps: { lat: '', lng: '' } };
-                            TPEschoolsList[row]['schoolName'] = csvBody[row][1];
-                            TPEschoolsList[row]['schoolDist'] = String(csvBody[row][3]).substr(3, 3);
-                            TPEschoolsList[row]['gps']['lat'] = parseFloat(csvBody[row][5]);
-                            TPEschoolsList[row]['gps']['lng'] = parseFloat(csvBody[row][6]);
-                        }
-                    });
-                }
-                fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/AirBoxDevicesList.txt', 'utf-8', function (err, data) {
-                    if (err) { //如果有錯誤就列印訊息並離開程式
-                        console.log('AirBoxDevicesList檔案讀取錯誤。');
-                        logger.info('AirBoxDevicesList檔案讀取錯誤。');
-                    }
-                    else {
-                        ConvertToTable(data, function (csvBody) {
-                            for (var row = 0; row < csvBody.length; row++) {
-                                deviceInfoList[row] = { deviceId: '', deviceDist: '', 'gps': { lat: '', lng: '' } }
-                                deviceInfoList[row]['deviceId'] = csvBody[row][0];
-                                deviceInfoList[row]['devicePos'] = csvBody[row][1];
-                            }
-
-                        });
-
-                        for (var i = 0; i < deviceInfoList.length; i++) {
-                            TPEschoolsList.forEach(function (scl) {
-                                if (String(deviceInfoList[i]['devicePos']).indexOf(scl['schoolName']) > -1) {
-                                    deviceInfoList[i]['deviceDist'] = scl['schoolDist'];
-                                    deviceInfoList[i]['gps']['lat'] = scl['gps']['lat'];
-                                    deviceInfoList[i]['gps']['lng'] = scl['gps']['lng'];
-                                }
-                            })
-                        }
-                        airboxData['entries'] = airboxData['entries'].sort(function (a, b) {
-                            //小到大排序
-                            return a['time'] > b['time'] ? 1 : -1;
-                        });
-                        console.log(JSON.stringify(airboxData['entries'][0]));
-                        for (var i = 0, j = 0; i < deviceInfoList.length; i++) {
-                            rst[j] = { deviceName: '', deviceDist: '', gps: { lat: '', lng: '' }, recoreTime: '', pm25: '' };
-                            rst[j]['deviceName'] = deviceInfoList[i]['devicePos'];
-                            rst[j]['deviceDist'] = deviceInfoList[i]['deviceDist'];
-                            rst[j]['gps'] = deviceInfoList[i]['gps'];
-                            airboxData['entries'].forEach(function (abd) {
-                                if (abd['device_id'] == deviceInfoList[i]['deviceId']) {
-                                    rst[j]['recoreTime'] = abd['time'];
-                                    rst[j]['pm25'] = abd['s_d0'];
-                                }
-                            });
-                            j++;
-                        }
-                        taiwanGeocodeTpe.forEach(function (row) {
-                            var toSave = [];
-                            var datatoDB = { result: '' };
-                            var j = 0;
-                            for (var i = 0; i < rst.length; i++) {
-                                if (row.v == rst[i]['deviceDist'] && rst[i]['pm25'] != "") {
-                                    toSave[j] = rst[i];
-                                    j++;
-                                }
-                            }
-                            datatoDB['result'] = toSave;
-                            var datasetId = 'airbox'
-                            var info = JSON.stringify(datatoDB);
-                            var areaCode = row.k;
-                            var tblName = 'dataset_to_display';
-                            saveToDB(datasetId, areaCode, info, tblName);
-                        });
-                        response.send(JSON.stringify(rst));
-                    }
-                });
-            });
-        }
-    });
-});
 */
-function saveToDB(did, ac, info, tn) {
-    console.log("saveToDB: " + tn);
-    console.log("info " + info);
-    pool.query("SELECT * FROM " + tn + " WHERE (id = '" + did + "' AND area_code = '" + ac + "')", function (error, result) {
-        if (error) {
-            logger.info('saveToDB '+error);
-            console.log(error)
-        };
-        var sql;
-        var MysqlFormat = new Date().toISOString().
-            replace(/T/, ' ').      // replace T with a space
-            replace(/\..+/, '');
-        MysqlFormat = NOW();
-        logger.info("MysqlFormat: " + MysqlFormat);
-        if (result == '') {
-            sql = "INSERT INTO " + tn + " VALUES ('" + did + "','" + ac + "','" + info + "'," + MysqlFormat + "," + MysqlFormat + ")";
-        } else {
-            sql = "UPDATE " + tn + " SET info_to_show = '" + info + "' , changed_at = " + MysqlFormat + " WHERE (id = '" + did + "' AND area_code = '" + ac + "')";
-        }
-        pool.query(sql, function (error, result) {
-            console.log(sql);
-            if (error) {
-                console.log(error);
-                logger.info('saveToDB query '+error);
-            }else {
-                console.log(result.affectedRows + " record(s) updated/insert");
-            }
-        });
-    });
-}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/login/:page", function (request, response) {
     logger.info('-------------------------------------------login-------------------------------------------');
-    try{
+    try {
         var page = request.params.page;
         //下面的跳轉網頁會跳轉到line登入的頁面，同時會在那邊進行登入 然後跳轉到conig的redirect_uri
         if (page == 'airbox') {
             response.redirect('https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=' + config.channel_id + '&redirect_uri=' + config.redirect_uri + 'air_pollutioninfo' + '&state=reportAuth&scope=openid%20profile&nonce=myapp');
-        }
-        else if (page == 'ncdr') {
+        } else if (page == 'ncdr') {
             response.redirect('https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=' + config.channel_id + '&redirect_uri=' + config.redirect_uri + 'flood_control' + '&state=reportAuth&scope=openid%20profile&nonce=myapp');
         }
-    }catch(err){
+    } catch (err) {
         logger.info(err);
     }
-    
+
 });
 var choose = 0; //判斷空氣盒子和防汛
 app.get('/air_pollutioninfo', function (request, response) {
-    logger.info('GET /setting request (空氣盒子)');
+    logger.info('GET/(空氣盒子)');
     choose = 1;
     //pathname 會包含state跟code  其中的code會是我們所需要的Authorization code然後state會是你在上面login跳轉網頁的url所設定的state state本身應該是用來防止攻擊驗證是不是本身的訊息的
     var pathname = url.parse(request.url).query;
@@ -319,22 +121,20 @@ app.get('/air_pollutioninfo', function (request, response) {
                     //'access_token': profile.access_token,
                 }
                 console.log(profile_data);
-                //addMember(decode.sub, decode.name, decode.picture, "statusMsg");
+                var airpollutioninfo;
                 request.header("Content-Type", 'text/html');
-                fs.readFile(__dirname+'/pages/tpe/channelwebs/air_pollutioninfo/index.htm', 'utf8', function (err, data) {
+                fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/index.htm', 'utf8', function (err, data) {
                     if (err) {
                         logger.info(err);
                         this.res.send(err);
                         return;
                     }
-                    console.log("123: " + mid);
                     data = data + '<script type="text/javascript"> var mid = "' + mid + '"; </script>';
                     this.res.send(data);
                 }.bind({ req: request, res: response }));
             }
         });
-    }
-    else {
+    }else {
         console.log("false");
         logger.info('取得使用者資訊錯誤。');
         response.send("<h1>無法取得權限<h1>");
@@ -347,46 +147,63 @@ app.get('/air_pollutioninfo', function (request, response) {
         }.bind({ req: request, res: response }));*/
     }
 });
+var airMap;
 app.get('/air_pollutioninfo' + '/air_map', function (request, response) {
-    logger.info('GET /setting request (GoogleMap)');
+    logger.info('GET/(GoogleMap)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/air_map.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (airMap == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/air_map.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            airMap = data;
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        response.send(airMap);
+    }
 });
+var activeSuggestion;
 app.get('/air_pollutioninfo' + '/active_suggestion', function (request, response) {
-    logger.info('GET /setting request (active_suggestion)');
+    logger.info('GET/(active_suggestion)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname +'/pages/tpe/channelwebs/air_pollutioninfo/active_suggestion.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (activeSuggestion == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/active_suggestion.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            activeSuggestion = data
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    }else{
+        response.send(activeSuggestion);
+    }
 });
+var setupAirboxSubinfo;
 app.get('/air_pollutioninfo' + '/setup_airbox_subinfo', function (request, response) {
-    logger.info('GET /setting request (setup_airbox_subinfo)');
+    logger.info('GET/(setup_airbox_subinfo)');
     request.header("Content-Type", 'text/html');
-    //var fs = require('fs');
-    fs.readFile(__dirname +'/pages/tpe/channelwebs/air_pollutioninfo/setup_airbox_subinfo.htm', 'utf8', function (err, data) {
+    if(setupAirboxSubinfo == undefined){
+    fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/setup_airbox_subinfo.htm', 'utf8', function (err, data) {
         if (err) {
             logger.info(err);
             this.res.send(err);
             return;
         }
+        setupAirboxSubinfo = data;
         this.res.send(data);
     }.bind({ req: request, res: response }));
+    }else{
+        response.send(activeSuggestion);
+    }
 });
 
 app.get('/flood_control', function (request, response) {
-    console.log('GET /setting request floodControl');
+    logger.info('GET/(floodControl)');
     choose = 2;
     //pathname 會包含state跟code  其中的code會是我們所需要的Authorization code然後state會是你在上面login跳轉網頁的url所設定的state state本身應該是用來防止攻擊驗證是不是本身的訊息的
     var pathname = url.parse(request.url).query;
@@ -409,28 +226,24 @@ app.get('/flood_control', function (request, response) {
                     //'access_token': profile.access_token,
                 }
                 console.log(profile_data);
-                //addMember(decode.sub, decode.name, decode.picture, "statusMsg");
             }
             request.header("Content-Type", 'text/html');
             fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/index.htm', 'utf8', function (err, data) {
                 if (err) {
                     this.res.send(err);
                 }
-                console.log("mid: " + mid);
                 data = data + '<script type="text/javascript"> var mid = "' + mid + '"; </script>';
                 this.res.send(data);
             }.bind({ req: request, res: response }));
         });
-
-    }
-    else {
+    }else {
         console.log("false");
         logger.info('取得使用者資訊錯誤。');
         response.send("<h1>無法取得權限<h1>");
     }
 });
 app.get('/get_center_control', function (request, response) {
-    logger.info('GET /setting request (get_center_control)');
+    logger.info('GET/(get_center_control)');
     /*var url = 'http://210.59.250.198/DisasterOperationSystemWebAPIUnite/api/DisasterServiceApi/GetCenterControl';
     //request.header("Content-Type", 'application/json');
     response.writeHead(200, {"Content-Type": 'application/json'});
@@ -446,39 +259,39 @@ app.get('/get_center_control', function (request, response) {
     };
     var http = require('http');
     var sendData = "";
-    var req = http.get(options, function (res) {      
+    var req = http.get(options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             console.log('Response: ' + chunk);
             sendData = sendData + chunk;
         });
 
-        res.on('end', function(){
-            if(res.statusCode == 200){
+        res.on('end', function () {
+            if (res.statusCode == 200) {
                 var finalData = {
-                "Data":""
+                    "Data": ""
                 }
                 finalData.Data = sendData;
                 response.send(finalData);
                 console.log('success end');
-            }else{
+            } else {
                 var finalData = {
                     "isCenterOpen": false
                 }
                 response.send(finalData);
                 console.log('false end');
             }
-        });      
-    /*
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/EOC.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
-    */
+        });
+        /*
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/EOC.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+        */
     });
     req.end();
 });
@@ -495,67 +308,86 @@ app.get('/get_disaster_stat/:id', function (request, response) {
     };
     var http = require('http');
     var sendData = "";
-    var req = http.get(options, function (res) {      
+    var req = http.get(options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
             console.log('Response: ' + chunk);
             sendData = sendData + chunk;
         });
 
-        res.on('end', function(){
-            if(res.statusCode == 200){
+        res.on('end', function () {
+            if (res.statusCode == 200) {
                 var finalData = {
-                "Data":""
+                    "Data": ""
                 }
                 finalData.Data = sendData;
                 response.send(finalData);//不確定Data是什麼有可能EOC無法顯示
                 console.log('success end');
-            }else{
+            } else {
                 var finalData = {
                     "isCenterOpen": false
                 }
                 response.send(finalData);
                 console.log('false end');
             }
-        });      
+        });
     });
     req.end();
 });
+var floodcontrolEOC;
 app.get('/flood_control' + '/EOC', function (request, response) {
-    logger.info('GET /setting request (EOC)');
+    logger.info('GET/(EOC)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/EOC.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (floodcontrolEOC == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/EOC.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            floodcontrolEOC = data;
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        response.send(floodcontrolEOC);
+    }
 });
+var NCDRSubLists;
 app.get('/flood_control' + '/NCDRSubLists', function (request, response) {
-    logger.info('GET /setting request (NCDRSubLists)');
+    logger.info('GET/(NCDRSubLists)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRSubLists.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (NCDRSubLists == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRSubLists.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info('NCDRSubLists error');
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            NCDRSubLists = data;
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        response.send(NCDRSubLists);
+    }
 });
+var NCDRFlood;
 app.get('/flood_control' + '/NCDRFlood', function (request, response) {
-    logger.info('GET /setting request (NCDRFlood)');
+    logger.info('GET/(NCDRFlood)');
     request.header("Content-Type", 'text/html');
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRFlood.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
+    if (NCDRFlood == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/NCDRFlood.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            NCDRFlood = data;
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        response.send(NCDRFlood);
+    }
 });
 /////////////////////////////////////////////////////////////////////////////////////////
 app.use(express.static('pages/tpe'));
@@ -597,10 +429,10 @@ function GetUserProfile(choose, pathname, callback) {
 
     }
     var dns = require('dns');
-    dns.lookup('api.line.me', function(err, result){
+    dns.lookup('api.line.me', function (err, result) {
         console.log(result);
         logger.info(result);
-    }) ;
+    });
     var postdata = "grant_type=" + data.grant_type + "&code=" + data.code + "&redirect_uri=" + data.redirect_uri + "&client_id=" + data.client_id + "&client_secret=" + data.client_secret;
     var options = {
         host: 'api.line.me',
@@ -638,39 +470,11 @@ function GetUserProfile(choose, pathname, callback) {
     req.end();
 };
 
-function addMember(mid, displayName, picUrl, statusMsg) {
-    pool.query("INSERT INTO member VALUES ('" + mid + "','" + displayName + "','" + picUrl + "','" + statusMsg + "')", function (error, result) {
-        var rst = {
-            'result': '',
-            'errorMessage': ''
-        };
-        //callback//
-        if (error) {
-            console.log('Error in the query');
-            console.log(error);
-            rst = {
-                'result': 'false',
-                'errorMessage': 'add member failed!'
-            };
-            return rst;
-        } else {
-            console.log('Successful query');
-            console.log(result);
-            rst = {
-                'result': 'true',
-                'errorMessage': 'success'
-            };
-            return rst;
-        }
-    });
-}
 //restfulapi
 app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
-    logger.info('GET /setting request listDatasetInfoToShow');
-    console.log('GET /setting request listDatasetInfoToShow');
-    logger.info("listDatasetInfoToShow_query: " + JSON.stringify(request.query));
-    console.log("listDatasetInfoToShow_query: " + JSON.stringify(request.query));
-    try{
+    logger.info('GET /setting request listDatasetInfoToShow_query');
+    console.log('GET /setting request listDatasetInfoToShow_query');
+    try {
         var authToken = request.query.authToken;
         var datasetId = request.query.datasetId;
         var areaCode = request.query.areaCode;
@@ -680,6 +484,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         };
         if (authToken == undefined) {
             console.log("No authorization key");
+            logger.info("No authorization key");
             rst_false = {
                 result: false,
                 errorMessage: 'No authorization key'
@@ -688,6 +493,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         }
         if (datasetId == undefined) {
             console.log("No dataset id");
+            logger.info("No dataset id");
             rst_false = {
                 result: false,
                 errorMessage: 'No dataset id'
@@ -696,6 +502,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         }
         if (areaCode == undefined) {
             console.log("No areaCode id");
+            logger.info("No areaCode id");
             rst_false = {
                 result: false,
                 errorMessage: 'No areaCode id'
@@ -704,6 +511,7 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         }
         if (authToken != config.AUTH_TOKEN) {
             console.log("Authorization fail");
+            logger.info("Authorization fail");
             rst_false = {
                 result: false,
                 errorMessage: 'Authorization fail'
@@ -712,77 +520,94 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
         }
         listDatasetInfoToShow(datasetId, areaCode, function (data) {
             console.log("listDatasetInfoToShow_sendData: " + JSON.stringify(data));
+            logger.info("listDatasetInfoToShow_sendData: " + JSON.stringify(data));
             response.send(data);
         });
         //response.end();
-    }catch(err){
+    } catch (err) {
         console.log('error(listDatasetInfoToShow)');
         logger.info('error(listDatasetInfoToShow)');
         console.log(err);
         logger.info(err);
     }
-    
+
 });
 function listDatasetInfoToShow(did, area, callback) {
     logger.info('function listDatasetInfoToShow');
-    console.log('function listDatasetInfoToShow')
+    console.log('function listDatasetInfoToShow');
     console.log("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')");
     logger.info("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')");
-    try{
-        pool.query("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
-            var rst_false = {
-                result: '',
-                errorMessage: ''
-            };
-            var rst_true = {
-                result: '',
-                errorMessage: '',
-                data: ''
-            };
-            if (error) {
-                logger.info(error);
-                console.log(error);
-            }else {
-                try{
-                    if (result == '') {
-                        console.log('Error in the query(listDatasetInfoToShow)');
-                        logger.info('Error in the query(listDatasetInfoToShow)');
-                        rst_false = {
-                            result: false,
-                            errorMessage: 'no subscription yet'
-                        };
-                        callback(rst_false);
-                }else{
-                    console.log('Successful query');
-                    logger.info('Successful query');
-                        rst_true = {
-                            'result': true,
-                            'errorMessage': 'success',
-                            'data': JSON.stringify(result)
-                        };
-                        callback(rst_true);
+    pool.getConnection(function (error, connection) {
+        // mysql
+        if (!!error) {
+            console.log('connection.query error');
+            logger.info('connection.query error');
+            console.log(err);
+            logger.info(err);
+        } else {
+            connection.query("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
+                var rst_false = {
+                    result: '',
+                    errorMessage: ''
+                };
+                var rst_true = {
+                    result: '',
+                    errorMessage: '',
+                    data: ''
+                };
+                if (error) {
+                    logger.info(error);
+                    console.log(error);
+                } else {
+                    try {
+                        if (result == '') {
+                            try {
+                                console.log('Error in the query(listDatasetInfoToShow)');
+                                logger.info('Error in the query(listDatasetInfoToShow)');
+
+                                rst_false = {
+                                    result: false,
+                                    errorMessage: 'no subscription yet'
+                                };
+                                logger.info(rst_true);
+                                connection.release();
+                                callback(rst_false);
+                                return;
+                            } catch (err) {
+                                logger.info('result------------------------------------------------------------------------------------------');
+                                logger.info(err);
+                            }
+                        } else {
+                            console.log('Successful query');
+                            logger.info('Successful query');
+                            rst_true = {
+                                'result': true,
+                                'errorMessage': 'success',
+                                'data': JSON.stringify(result)
+                            };
+                            connection.release();
+                            callback(rst_true);
+                            return;
+                        }
+                    } catch (err) {
+                        console.log('result != "" ');
+                        logger.info('result != "" ');
+                        console.log(err);
+                        logger.info(err);
                     }
-                }catch(err){
-                    console.log('result != "" ');
-                    logger.info('result != "" ');
-                    console.log(err);
-                    logger.info(err);
                 }
-            }
-        });
-    }catch(err){
-        console.log('connection.query error');
-        logger.info('connection.query error');
-        console.log(err);
-        logger.info(err);
-    }
+                connection.release();
+            });
+
+        }
+    });
 };
 app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response) {
     console.log('GET /setting request listSubscriptionContainer');
     logger.info('GET /setting request listSubscriptionContainer');
     console.log("listSubscriptionContainer_query: " + JSON.stringify(request.query));
     logger.info("listSubscriptionContainer_query: " + JSON.stringify(request.query));
-    try{
+    try {
         var authToken = request.query.authToken;
         var datasetId = request.query.datasetId;
         var memberId = request.query.memberId;
@@ -817,77 +642,97 @@ app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response
         if (authToken != config.AUTH_TOKEN) {
             console.log("Authorization fail");
             rst_false = {
-            result: false,
-            errorMessage: 'Authorization fail'
-        };
-        response.send(JSON.stringify(rst_false));
+                result: false,
+                errorMessage: 'Authorization fail'
+            };
+            response.send(JSON.stringify(rst_false));
         }
         listSubscriptionContainer(memberId, datasetId, function (data) {
             console.log("listSubscriptionContainer_sendData: " + JSON.stringify(data));
             response.send(data);
         });
         //response.end();
-    }catch(err){
+    } catch (err) {
         console.log('error(listSubscriptionContainer)');
         logger.info('error(listSubscriptionContainer)');
         console.log(err);
         logger.info(err);
     }
-    
+
 });
 function listSubscriptionContainer(mid, did, callback) {
     logger.info('function listSubscriptionContainer');
     console.log('function listSubscriptionContainer');
-    logger.log('------------------------------------------------------'+"SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
-    console.log('------------------------------------------------------'+"SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
-    try{
-        pool.query("SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')", function (error, result) {
-            var rst_false = {
-                result: '',
-                errorMessage: ''
-            };
-            var rst_true = {
-                result: '',
-                errorMessage: '',
-                data: ''
-            };
-            if (error){
-                logger.info(error);
-                console.log(error);
-            }else{
-                if (result == '') {
-                    console.log('Error in the query(listSubscriptionContainer)');
-                    logger.info('Error in the query(listSubscriptionContainer)');
-                    rst_false = {
-                        result: false,
-                        errorMessage: 'no subscription yet'
-                    };
-                    callback(rst_false);
-                }else {
-                    console.log('Successful query');
-                    logger.info('Successful query');
-                    rst_true = {
-                        'result': true,
-                        'errorMessage': 'already subscribed',
-                        'data': JSON.stringify(result)
-                    };
-                    callback(rst_true);
+    logger.info('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
+    console.log('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
+    var timestamp = new Date().getTime();
+    logger.info('1.' + timestamp);
+    pool.getConnection(function (error, connection) {
+        logger.info('2.' + this.timestamp);
+        // mysql
+        if (!!error) {
+            logger.info('Database Error');
+            console.log('Database Error');
+            logger.info(error);
+            console.log(error);
+        } else {
+            logger.info('Database Connected');
+            console.log('Database Connected');
+            logger.info('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
+            connection.query("SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')", function (error, result) {
+                var rst_false = {
+                    result: '',
+                    errorMessage: ''
+                };
+                var rst_true = {
+                    result: '',
+                    errorMessage: '',
+                    data: ''
+                };
+                if (error) {
+                    logger.info(error);
+                    console.log(error);
+                } else {
+                    if (result == '') {
+                        try {
+                            console.log('Error in the query(listSubscriptionContainer)');
+                            logger.info('Error in the query(listSubscriptionContainer)');
+                            rst_false = {
+                                result: false,
+                                errorMessage: 'no subscription yet'
+                            };
+                            logger.info(rst_false);
+                            connection.release();
+                            callback(rst_false);
+                            return;
+                        } catch (err) {
+                            logger.info('result================================================================');
+                            logger.info(err);
+                        }
+                    } else {
+                        console.log('Successful query');
+                        logger.info('Successful query');
+                        rst_true = {
+                            'result': true,
+                            'errorMessage': 'already subscribed',
+                            'data': JSON.stringify(result)
+                        };
+                        connection.release();
+                        callback(rst_true);
+                        return;
+                    }
                 }
-            }
-        });
-    }catch(err){
-        console.log('result != "" ');
-        logger.info('result != "" ');
-        console.log(err);
-        logger.info(err);
-    }
+                connection.release();
+            });
+        }
+    }.bind({ timestamp: timestamp }));
 };
 app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response) {
-    logger.info('POST addSubscriptionContainer');
-    console.log('POST addSubscriptionContainer');
+    logger.info('POST/ (addSubscriptionContainer)');
+    console.log('POST/ (addSubscriptionContainer)');
     logger.info("addSubscriptionContainer_query: " + JSON.stringify(request.body));
     console.log("addSubscriptionContainer_query: " + JSON.stringify(request.body));
-    try{
+    try {
         var authToken = request.body.authToken;
         var memberId = request.body.memberId;
         var datasetId = request.body.datasetId;
@@ -932,7 +777,7 @@ app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response
             console.log("addSubscriptionContainer_sendData: " + JSON.stringify(data));
             response.send(data);
         });
-    }catch(err){
+    } catch (err) {
         console.log('error(addSubscriptionContainer)');
         logger.info('error(addSubscriptionContainer)');
         console.log(err);
@@ -945,51 +790,61 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
     var MysqlFormat = new Date().toISOString().
         replace(/T/, ' ').      // replace T with a space
         replace(/\..+/, '');
-    MysqlFormat = NOW();
+    MysqlFormat = 'NOW()';
     logger.info(MysqlFormat);
-    console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
-    logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", ' "+MysqlFormat+" ' ,'1')");
-    try{
-        pool.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", "+MysqlFormat+" ,'1')", function (error, result) {
-            var rst_false = {
-                result: '',
-                errorMessage: ''
-            };
-            var rst_true = {
-                result: '',
-                errorMessage: '',
-                data: ''
-            };
-            if (error) {
-                console.log(error);
-                logger.info(error)
-            }else {
-                if (result == '') {
-                    console.log('Error in the query(addSubscriptionContainer)');
-                    logger.info('Error in the query(addSubscriptionContainer)');
-                    rst_false = {
-                        result: false,
-                        errorMessage: 'errorMessage'
-                    };
-                    callback(rst_false);
-                }else{
-                    console.log('Successful query');
-                    logger.info('Successful query');
-                    rst_true = {
-                        'result': true,
-                        'errorMessage': 'success',
-                        'data': JSON.stringify(result)
-                    };
-                    callback(rst_true);
+    console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + "," + MysqlFormat + ",'1')");
+    logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", " + MysqlFormat + " ,'1')");
+    pool.getConnection(function (error, connection) {
+        // mysql
+        if (!!error) {
+            logger.info('Database Error');
+            console.log('Database Error');
+            logger.info(error);
+            console.log(error);
+        } else {
+            logger.info('Database Connected');
+            console.log('Database Connected');
+            connection.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + "," + MysqlFormat + ",'1')", function (error, result) {
+                var rst_false = {
+                    result: '',
+                    errorMessage: ''
+                };
+                var rst_true = {
+                    result: '',
+                    errorMessage: '',
+                    data: ''
+                };
+                if (error) {
+                    console.log(error);
+                    logger.info(error)
+                } else {
+                    if (result == '') {
+                        console.log('Error in the query(addSubscriptionContainer)');
+                        logger.info('Error in the query(addSubscriptionContainer)');
+                        rst_false = {
+                            result: false,
+                            errorMessage: 'errorMessage'
+                        };
+                        connection.release();
+                        callback(rst_false);
+                        return;
+                    } else {
+                        console.log('Successful query');
+                        logger.info('Successful query');
+                        rst_true = {
+                            'result': true,
+                            'errorMessage': 'success',
+                            'data': JSON.stringify(result)
+                        };
+                        connection.release();
+                        callback(rst_true);
+                        return;
+                    }
                 }
-            }
-        });
-    }catch(err){
-        console.log('result != "" ');
-        logger.info('result != "" ');
-        console.log(err);
-        logger.info(err);
-    }
+                connection.release();
+            });
+        }
+    });
 };
 
 app.put('/restfulapi/v1/updateSubscriptionContainer/', function (request, response) {
@@ -1004,42 +859,50 @@ app.put('/restfulapi/v1/updateSubscriptionContainer/', function (request, respon
         result: '',
         errorMessage: ''
     };
-    if (authToken == undefined) {
-        console.log("No authorization key");
-        rst_false = {
-            result: false,
-            errorMessage: 'No authorization key'
-        };
-        response.send(JSON.stringify(rst_false));
+    try {
+        if (authToken == undefined) {
+            console.log("No authorization key");
+            rst_false = {
+                result: false,
+                errorMessage: 'No authorization key'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        if (datasetId == undefined) {
+            console.log("No dataset id");
+            rst_false = {
+                result: false,
+                errorMessage: 'No dataset id'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        if (memberId == undefined) {
+            console.log("No member id");
+            rst_false = {
+                result: false,
+                errorMessage: 'No member id'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        if (authToken != config.AUTH_TOKEN) {
+            console.log("Authorization fail");
+            rst_false = {
+                result: false,
+                errorMessage: 'Authorization fail'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        updateSubscriptionContainer(memberId, datasetId, subscribeDetail, todo, function (data) {
+            console.log("updateSubscriptionContainerr_sendData: " + JSON.stringify(data));
+            response.send(data);
+        });
+    } catch (err) {
+        console.log('--------------------------------------------------------------/updateSubscriptionContainer');
+        console.log(err);
+        logger.info('--------------------------------------------------------------/updateSubscriptionContainer');
+        logger.info(err);
     }
-    if (datasetId == undefined) {
-        console.log("No dataset id");
-        rst_false = {
-            result: false,
-            errorMessage: 'No dataset id'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    if (memberId == undefined) {
-        console.log("No member id");
-        rst_false = {
-            result: false,
-            errorMessage: 'No member id'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    if (authToken != config.AUTH_TOKEN) {
-        console.log("Authorization fail");
-        rst_false = {
-            result: false,
-            errorMessage: 'Authorization fail'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    updateSubscriptionContainer(memberId, datasetId, subscribeDetail, todo, function (data) {
-        console.log("updateSubscriptionContainerr_sendData: " + JSON.stringify(data));
-        response.send(data);
-    });
+
 });
 function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
     var origRaw, origData, origArea;
@@ -1047,7 +910,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
         var MysqlFormat = new Date().toISOString().
             replace(/T/, ' ').      // replace T with a space
             replace(/\..+/, '');
-        MysqlFormat = NOW();
+        MysqlFormat = 'NOW()';
         listSubscriptionContainer(mid, did, function (origRaw) {
             switch (todo) {
                 case 'cancelArea':
@@ -1058,7 +921,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                     console.log("origData: " + JSON.stringify(origData));
                     origArea = JSON.parse(origData[0]['detail']);
                     console.log("origArea: " + JSON.stringify(origArea));
-                    console.log('++++++++++++++++++++++++++++++++++++++++'+dataToUpdate);
+                    console.log('++++++++++++++++++++++++++++++++++++++++' + dataToUpdate);
                     dataToUpdate = JSON.parse(dataToUpdate);
                     console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
                     origArea['area'].forEach(function (v, k) {//
@@ -1090,7 +953,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                     console.log("origData: " + JSON.stringify(origData));
                     origArea = JSON.parse(origData[0]['detail']);
                     console.log("origArea: " + JSON.stringify(origArea));
-                    console.log('-------------------------------------------------------------------'+dataToUpdate);
+                    console.log('-------------------------------------------------------------------' + dataToUpdate);
                     dataToUpdate = dataToUpdate;
 
                     origArea['area'].push(dataToUpdate['area'][0]);
@@ -1107,7 +970,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                     origArea = JSON.parse(origData[0]['detail']);
                     console.log("origArea: " + JSON.stringify(origArea));
 
-                    console.log('*********************************************'+dataToUpdate);
+                    console.log('*********************************************' + dataToUpdate);
                     dataToUpdate = JSON.parse(dataToUpdate);
                     console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
                     origArea.push(dataToUpdate);
@@ -1123,7 +986,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
 
                     origArea = JSON.parse(origData[0]['detail']);
                     console.log("origArea: " + JSON.stringify(origArea));
-                    console.log('///////////////////////////////////////////////////////////////////////////////////////'+dataToUpdate);
+                    console.log('///////////////////////////////////////////////////////////////////////////////////////' + dataToUpdate);
 
                     dataToUpdate = JSON.parse(dataToUpdate);
                     console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
@@ -1147,7 +1010,7 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                     origArea = JSON.parse(origData[0]['detail']);
                     console.log("origArea: " + JSON.stringify(origArea));
 
-                    console.log('========================================'+dataToUpdate);
+                    console.log('========================================' + dataToUpdate);
                     dataToUpdate = JSON.parse(dataToUpdate);
                     console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
                     var index;
@@ -1176,44 +1039,60 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                 default:
                     break;
             }
-            pool.query("UPDATE subscription_container SET detail = '" + dataToUpdate + "' , changed_at = " + MysqlFormat + " WHERE (dataset_id = '" + did + "' AND mid = '" + mid + "')", function (error, result) {
-                var rst_false = {
-                    result: '',
-                    errorMessage: ''
-                };
-                var rst_true = {
-                    result: '',
-                    errorMessage: '',
-                    data: ''
-                };
-                if (error) {
+            pool.getConnection(function (error, connection) {
+                // mysql
+                if (!!error) {
+                    logger.info('Database Error');
+                    console.log('Database Error');
+                    logger.info(error);
                     console.log(error);
                 } else {
-                    if (result == '') {
-                        
-                        console.log('Update failed');
-                        rst_false = {
-                            result: false,
-                            errorMessage: 'Update failed'
+                    connection.query("UPDATE subscription_container SET detail = '" + dataToUpdate + "' , changed_at = " + MysqlFormat + " WHERE (dataset_id = '" + did + "' AND mid = '" + mid + "')", function (error, result) {
+                        var rst_false = {
+                            result: '',
+                            errorMessage: ''
                         };
-                        callback(rst_false);
-                    }
-                    else {
-                        console.log('subscription container updated');
-                        rst_true = {
-                            'result': true,
-                            'errorMessage': 'subscription container updated',
-                            'data': JSON.stringify(result)
+                        var rst_true = {
+                            result: '',
+                            errorMessage: '',
+                            data: ''
                         };
-                        callback(rst_true);
-                    }
+                        if (error) {
+                            console.log(error);
+                        } else {
+                            if (result == '') {
+
+                                console.log('Update failed');
+                                rst_false = {
+                                    result: false,
+                                    errorMessage: 'Update failed'
+                                };
+                                connection.release();
+                                callback(rst_false);
+                                return;
+                            }
+                            else {
+                                console.log('subscription container updated');
+                                rst_true = {
+                                    'result': true,
+                                    'errorMessage': 'subscription container updated',
+                                    'data': JSON.stringify(result)
+                                };
+                                connection.release();
+                                callback(rst_true);
+                                return;
+                            }
+                        }
+                        connection.release();
+                    });
                 }
             });
+
         });
     }
 };
 app.get('/restfulapi/v1/listDataset/', function (request, response) {
-    logger.info('GET listDataset');
+    logger.info('GET/(listDataset)');
     console.log("listDataset: " + JSON.stringify(request.query));
     var authToken = request.query.authToken;
     var datasetId = request.query.datasetId;
@@ -1265,42 +1144,58 @@ app.get('/restfulapi/v1/listDataset/', function (request, response) {
 function listDataset(did, area, callback) {
     logger.info('function listDataset');
     console.log(did + " AND " + area);
-    pool.query("SELECT * FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
-        var rst_false = {
-            result: '',
-            errorMessage: ''
-        };
-        var rst_true = {
-            result: '',
-            errorMessage: '',
-            data: ''
-        };
-        if (error) {
-            logger.info('error');
+    pool.getConnection(function (error, connection) {
+        // mysql
+        if (!!error) {
+            logger.info('Database Error');
+            console.log('Database Error');
+            logger.info(error);
             console.log(error);
         } else {
-            if (result == '') {
-                console.log('Error in the query(listDataset)');
-                rst_false = {
-                    result: false,
-                    errorMessage: 'no subscription yet'
+            connection.query("SELECT * FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
+                var rst_false = {
+                    result: '',
+                    errorMessage: ''
                 };
-                callback(rst_false);
-            }
-            else {
-                console.log('Successful query');
-                rst_true = {
-                    'result': true,
-                    'errorMessage': 'success',
-                    'data': JSON.stringify(result)
+                var rst_true = {
+                    result: '',
+                    errorMessage: '',
+                    data: ''
                 };
-                callback(rst_true);
-            }
+                if (error) {
+                    logger.info('error');
+                    console.log(error);
+                } else {
+                    if (result == '') {
+                        console.log('Error in the query(listDataset)');
+                        rst_false = {
+                            result: false,
+                            errorMessage: 'no subscription yet'
+                        };
+                        connection.release();
+                        callback(rst_false);
+                        return;
+                    }
+                    else {
+                        console.log('Successful query');
+                        rst_true = {
+                            'result': true,
+                            'errorMessage': 'success',
+                            'data': JSON.stringify(result)
+                        };
+                        connection.release();
+                        callback(rst_true);
+                        return;
+                    }
+                }
+                connection.release();
+            });
         }
     });
+
 }
 app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
-    logger.info('GET listPDatasetInfoToShow');
+    logger.info('GET/(listPDatasetInfoToShow)');
     console.log("listPDatasetInfoToShow: " + JSON.stringify(request.query));
     var authToken = request.query.authToken;
     var datasetId = request.query.datasetId;
@@ -1342,168 +1237,165 @@ app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
 function listPDatasetInfoToShow(did, area, callback) {
     logger.info('listPDatasetInfoToShow');
     console.log(did + " AND " + area);
-    pool.query("SELECT info_to_show FROM dataset_to_push WHERE (id = '" + did + "' AND area_code = '" + area + "' AND (UNIX_TIMESTAMP(" + Date.now() + ")-UNIX_TIMESTAMP(`changed_at`) < 86400 ))", function (error, result) {
-        var rst_false = {
-            result: '',
-            errorMessage: ''
-        };
-        var rst_true = {
-            result: '',
-            errorMessage: '',
-            data: ''
-        };
-        if (error) {
+    pool.getConnection(function (error, connection) {
+        // mysql
+        if (!!error) {
+            logger.info('Database Error');
+            console.log('Database Error');
             logger.info(error);
             console.log(error);
         } else {
-            if (result == '') {
-                console.log('Error in the query(listPDatasetInfoToShow)');
-                rst_false = {
-                    result: false,
-                    errorMessage: 'no subscription yet'
+            connection.query("SELECT info_to_show FROM dataset_to_push WHERE (id = '" + did + "' AND area_code = '" + area + "' AND (UNIX_TIMESTAMP(" + Date.now() + ")-UNIX_TIMESTAMP(`changed_at`) < 86400 ))", function (error, result) {
+                var rst_false = {
+                    result: '',
+                    errorMessage: ''
                 };
-                callback(rst_false);
-            }
-            else {
-                console.log('Successful query');
-                rst_true = {
-                    'result': true,
-                    'errorMessage': 'success',
-                    'data': JSON.stringify(result)
+                var rst_true = {
+                    result: '',
+                    errorMessage: '',
+                    data: ''
                 };
-                callback(rst_true);
-            }
+                if (error) {
+                    logger.info(error);
+                    console.log(error);
+                } else {
+                    if (result == '') {
+                        console.log('Error in the query(listPDatasetInfoToShow)');
+                        rst_false = {
+                            result: false,
+                            errorMessage: 'no subscription yet'
+                        };
+                        connection.release();
+                        callback(rst_false);
+                        return;
+                    }else {
+                        console.log('Successful query');
+                        rst_true = {
+                            'result': true,
+                            'errorMessage': 'success',
+                            'data': JSON.stringify(result)
+                        };
+                        connection.release();
+                        callback(rst_true);
+                        return;
+                    }
+                }
+                connection.release();
+            });
+
         }
     });
+
 }
 app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, response) {
-    console.log("deleteSubscriptionContainer: " + JSON.stringify(request.body));
-    var authToken = request.body.authToken;
-    var datasetId = request.body.datasetId;
-    var memberId = request.body.memberId;
-    var rst_false = {
-        result: '',
-        errorMessage: ''
-    };
-    if (authToken == undefined) {
-        console.log("No authorization key");
-        rst_false = {
-            result: false,
-            errorMessage: 'No authorization key'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    if (datasetId == undefined) {
-        console.log("No dataset id");
-        rst_false = {
-            result: false,
-            errorMessage: 'No dataset id'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    if (memberId == undefined) {
-        console.log("No memberId id");
-        rst_false = {
-            result: false,
-            errorMessage: 'No memberId id'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    if (authToken != config.AUTH_TOKEN) {
-        console.log("Authorization fail");
-        rst_false = {
-            result: false,
-            errorMessage: 'Authorization fail'
-        };
-        response.send(JSON.stringify(rst_false));
-    }
-    deleteSubscriptionContainer(memberId, datasetId, function (data) {
-        console.log("deleteSubscriptionContainer_sendData: " + JSON.stringify(data));
-        response.send(data);
-    });
-});
-function deleteSubscriptionContainer(mid, did, callback) {
-    pool.query("DELETE FROM subscription_container WHERE mid = '" + mid + "' AND dataset_id = '" + did + "'", function (error, result) {
+    logger.info('delete/ (SubscriptionContainer)');
+    try {
+        var authToken = request.body.authToken;
+        var datasetId = request.body.datasetId;
+        var memberId = request.body.memberId;
         var rst_false = {
             result: '',
             errorMessage: ''
         };
-        var rst_true = {
-            result: '',
-            errorMessage: '',
-            data: ''
-        };
-        if (error) {
-            console.log(error);
-        } else {
-            if (result == '') {
-                console.log('Invalid input');
-                rst_false = {
-                    result: false,
-                    errorMessage: 'Invalid input'
-                };
-                callback(rst_false);
-            }
-            else {
-                console.log('subscription container deleted');
-                rst_true = {
-                    'result': true,
-                    'errorMessage': 'subscription container deleted',
-                    'data': JSON.stringify(result)
-                };
-                callback(rst_true);
-            }
+        if (authToken == undefined) {
+            console.log("No authorization key");
+            logger.info("No authorization key");
+            rst_false = {
+                result: false,
+                errorMessage: 'No authorization key'
+            };
+            response.send(JSON.stringify(rst_false));
         }
-    });
-}
-function SendUsers() {
-    pool.query("SELECT mid FROM member", function (error, result) {
-        //callback
-        if (!!error) {
-            console.log('Error in the query');
-            console.log(error);
-            response.send(error)
-        } else {
-            console.log('Successful query');
-            for (i = 0; i < result.length; i++) {
-                SendMessage(result[i].mid, '要發送的訊息');
-            }
+        if (datasetId == undefined) {
+            console.log("No dataset id");
+            logger.info("No dataset id");
+            rst_false = {
+                result: false,
+                errorMessage: 'No dataset id'
+            };
+            response.send(JSON.stringify(rst_false));
         }
-    });
-};
-
-//push message
-function SendMessage(userId, message) {
-    var data = {
-        'to': userId,
-        'messages': [
-            { 'type': 'text', 'text': message }
-        ]
-    };
-    console.log('傳送訊息給 ' + userId);
-    PostToLINE(data, config.channel_access_token);
-}
-//
-function PostToLINE(data, channel_access_token) {
-    console.log(JSON.stringify(data));
-    var options = {
-        host: 'api.line.me',
-        port: '443',
-        path: '/v2/bot/message/push',
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json; charset=UTF-8',
-            'Content-Length': Buffer.byteLength(JSON.stringify(data)),
-            'Authorization': 'Bearer <' + channel_access_token + '>'
+        if (memberId == undefined) {
+            console.log("No memberId id");
+            logger.info("No memberId id");
+            rst_false = {
+                result: false,
+                errorMessage: 'No memberId id'
+            };
+            response.send(JSON.stringify(rst_false));
         }
-    };
-    var https = require('https');
-    var req = https.request(options, function (res) {
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            console.log('Response: ' + chunk);
+        if (authToken != config.AUTH_TOKEN) {
+            console.log("Authorization fail");
+            logger.info("No memberId id");
+            rst_false = {
+                result: false,
+                errorMessage: 'Authorization fail'
+            };
+            response.send(JSON.stringify(rst_false));
+        }
+        deleteSubscriptionContainer(memberId, datasetId, function (data) {
+            console.log("deleteSubscriptionContainer_sendData: " + JSON.stringify(data));
+            logger.info("deleteSubscriptionContainer_sendData: " + JSON.stringify(data));
+            response.send(data);
         });
-    });
-    req.write(JSON.stringify(data));
-    req.end();
+    } catch (err) {
+        logger.info(err);
+    }
+});
+function deleteSubscriptionContainer(mid, did, callback) {
+    logger.info('function deleteSubscriptionContainer');
+    try {
+        pool.getConnection(function (error, connection) {
+            // mysql
+            if (!!error) {
+                logger.info('Database Error');
+                console.log('Database Error');
+                logger.info(error);
+                console.log(error);
+            } else {
+                connection.query("DELETE FROM subscription_container WHERE mid = '" + mid + "' AND dataset_id = '" + did + "'", function (error, result) {
+                    var rst_false = {
+                        result: '',
+                        errorMessage: ''
+                    };
+                    var rst_true = {
+                        result: '',
+                        errorMessage: '',
+                        data: ''
+                    };
+                    if (error) {
+                        logger.info('Delete error');
+                        logger.info(error);
+                    } else {
+                        if (result == '') {
+                            console.log('Invalid input');
+                            logger.info('Invalid input');
+                            rst_false = {
+                                result: false,
+                                errorMessage: 'Invalid input'
+                            };
+                            connection.release();
+                            callback(rst_false);
+                            return;
+                        } else {
+                            console.log('subscription container deleted');
+                            logger.info('subscription container deleted');
+                            rst_true = {
+                                'result': true,
+                                'errorMessage': 'subscription container deleted',
+                                'data': JSON.stringify(result)
+                            };
+                            connection.release();
+                            callback(rst_true);
+                            return;
+                        }
+                    }
+                    connection.release();
+                });
+            }
+        });
+    } catch (err) {
+        logger.info(err);
+        console.log(err);
+    }
 };
