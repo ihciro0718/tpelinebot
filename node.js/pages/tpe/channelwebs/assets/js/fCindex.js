@@ -51,7 +51,7 @@ window.addEventListener("load", function (e) {
         ncdrf.addEventListener('click', gotoNCDRFlood, false);
         ncdrwg.addEventListener('click', gotoNCDRSubList, false);
         ncdrp.addEventListener('click', gotoNCDRSubList, false);
-        function gotoNCDRFlood(sel) {//
+        function gotoNCDRFlood(sel) {
             location.href = '/flood_control/NCDRFlood?mid=' + sel.currentTarget.memberId + '&did=' + sel.currentTarget.value;
         }
 
