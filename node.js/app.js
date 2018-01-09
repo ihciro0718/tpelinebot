@@ -7,7 +7,7 @@ log4js_extend(log4js, {
 });
 log4js.configure(__dirname + '/log4js.json');
 var logger = log4js.getLogger('nodeCent');
-
+logger.info('app.js start~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 var express = require('express');
 var hashtable = require(__dirname + '/hashtable.js');
 
@@ -64,23 +64,6 @@ var pool = mysql.createPool({
     database: db.database, //要抓的database名稱
     waitForConnections: true
 });
-/*
-pool.getConnection(function (error) {
-    // mysql
-    if (!!error) {
-        logger.info('Database Error');
-        console.log('Database Error');
-        logger.info(error);
-        console.log(error);
-    } else {
-        logger.info('Database Connected');
-        console.log('Database Connected');
-        
-        connection.release();
-    }
-});
-*/
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.get("/login/:page", function (request, response) {
     logger.info('-------------------------------------------login-------------------------------------------');
     try {
@@ -102,16 +85,13 @@ app.get('/air_pollutioninfo', function (request, response) {
     choose = 1;
     //pathname 會包含state跟code  其中的code會是我們所需要的Authorization code然後state會是你在上面login跳轉網頁的url所設定的state state本身應該是用來防止攻擊驗證是不是本身的訊息的
     var pathname = url.parse(request.url).query;
-    console.log("pathname: " + pathname);
     //獲得user_profile並解碼
     if (String(pathname).indexOf("error_description") < 0) {
         var mid;
         GetUserProfile(choose, pathname, function (data) {
             if (data != false) {
                 var profile = JSON.parse(data);
-                console.log("profile: " + JSON.stringify(profile));
                 var decode = jwtDecode(profile.id_token);
-                console.log("decode: " + JSON.stringify(decode));
                 mid = decode.sub;
                 var profile_data = {
                     'memberId': decode.sub,
@@ -120,7 +100,6 @@ app.get('/air_pollutioninfo', function (request, response) {
                     'statusMessage': 'statusMsg',
                     //'access_token': profile.access_token,
                 }
-                console.log(profile_data);
                 var airpollutioninfo;
                 request.header("Content-Type", 'text/html');
                 fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/index.htm', 'utf8', function (err, data) {
@@ -134,8 +113,8 @@ app.get('/air_pollutioninfo', function (request, response) {
                 }.bind({ req: request, res: response }));
             }
         });
-    }else {
-        console.log("false");
+    } else {
+        logger.info("false");
         logger.info('取得使用者資訊錯誤。');
         response.send("<h1>無法取得權限<h1>");
         /*fs.readFile('./pages/tpe/channelwebs/air_pollutioninfo/index.htm', 'utf8', function (err, data) {
@@ -162,6 +141,7 @@ app.get('/air_pollutioninfo' + '/air_map', function (request, response) {
             this.res.send(data);
         }.bind({ req: request, res: response }));
     } else {
+        logger.info(airMap);
         response.send(airMap);
     }
 });
@@ -179,7 +159,8 @@ app.get('/air_pollutioninfo' + '/active_suggestion', function (request, response
             activeSuggestion = data
             this.res.send(data);
         }.bind({ req: request, res: response }));
-    }else{
+    } else {
+        logger.info(activeSuggestion);
         response.send(activeSuggestion);
     }
 });
@@ -187,18 +168,19 @@ var setupAirboxSubinfo;
 app.get('/air_pollutioninfo' + '/setup_airbox_subinfo', function (request, response) {
     logger.info('GET/(setup_airbox_subinfo)');
     request.header("Content-Type", 'text/html');
-    if(setupAirboxSubinfo == undefined){
-    fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/setup_airbox_subinfo.htm', 'utf8', function (err, data) {
-        if (err) {
-            logger.info(err);
-            this.res.send(err);
-            return;
-        }
-        setupAirboxSubinfo = data;
-        this.res.send(data);
-    }.bind({ req: request, res: response }));
-    }else{
-        response.send(activeSuggestion);
+    if (setupAirboxSubinfo == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/air_pollutioninfo/setup_airbox_subinfo.htm', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            setupAirboxSubinfo = data;
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        logger.info(setupAirboxSubinfo);
+        response.send(setupAirboxSubinfo);
     }
 });
 
@@ -207,16 +189,13 @@ app.get('/flood_control', function (request, response) {
     choose = 2;
     //pathname 會包含state跟code  其中的code會是我們所需要的Authorization code然後state會是你在上面login跳轉網頁的url所設定的state state本身應該是用來防止攻擊驗證是不是本身的訊息的
     var pathname = url.parse(request.url).query;
-    console.log(pathname);
     //獲得user_profile並解碼
     if (String(pathname).indexOf("error_description") < 0) {
         var mid;
         GetUserProfile(choose, pathname, function (data) {
             if (data) {
                 var profile = JSON.parse(data);
-                console.log("profile: " + JSON.stringify(profile));
                 var decode = jwtDecode(profile.id_token);
-                console.log("decode: " + JSON.stringify(decode));
                 mid = decode.sub;
                 var profile_data = {
                     'memberId': decode.sub,
@@ -225,7 +204,6 @@ app.get('/flood_control', function (request, response) {
                     'statusMessage': 'statusMsg',
                     //'access_token': profile.access_token,
                 }
-                console.log(profile_data);
             }
             request.header("Content-Type", 'text/html');
             fs.readFile(__dirname + '/pages/tpe/channelwebs/flood_control/index.htm', 'utf8', function (err, data) {
@@ -236,8 +214,8 @@ app.get('/flood_control', function (request, response) {
                 this.res.send(data);
             }.bind({ req: request, res: response }));
         });
-    }else {
-        console.log("false");
+    } else {
+        logger.info("false");
         logger.info('取得使用者資訊錯誤。');
         response.send("<h1>無法取得權限<h1>");
     }
@@ -262,7 +240,7 @@ app.get('/get_center_control', function (request, response) {
     var req = http.get(options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            console.log('Response: ' + chunk);
+            logger.info('Response: ' + chunk);
             sendData = sendData + chunk;
         });
 
@@ -273,13 +251,13 @@ app.get('/get_center_control', function (request, response) {
                 }
                 finalData.Data = sendData;
                 response.send(finalData);
-                console.log('success end');
+                logger.info('success end');
             } else {
                 var finalData = {
                     "isCenterOpen": false
                 }
                 response.send(finalData);
-                console.log('false end');
+                logger.info('false end');
             }
         });
         /*
@@ -311,7 +289,7 @@ app.get('/get_disaster_stat/:id', function (request, response) {
     var req = http.get(options, function (res) {
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            console.log('Response: ' + chunk);
+            logger.info('Response: ' + chunk);
             sendData = sendData + chunk;
         });
 
@@ -322,13 +300,13 @@ app.get('/get_disaster_stat/:id', function (request, response) {
                 }
                 finalData.Data = sendData;
                 response.send(finalData);//不確定Data是什麼有可能EOC無法顯示
-                console.log('success end');
+                logger.info('success end');
             } else {
                 var finalData = {
                     "isCenterOpen": false
                 }
                 response.send(finalData);
-                console.log('false end');
+                logger.info('false end');
             }
         });
     });
@@ -395,20 +373,13 @@ app.use(express.static('pages/tpe'));
 
 function GetUserProfile(choose, pathname, callback) {
     var code, state, friendship_status_changed;
-    console.log("pathname: " + pathname);
     if (String(pathname).indexOf("friendship_status_changed") > 0) {
         friendship_status_changed = String(pathname).split("=")[1].split("&")[0];
         code = String(pathname).split("=")[2].split("&")[0];
         state = String(pathname).split("=")[3];
-        console.log("friendship_status_changed: " + friendship_status_changed);
-        console.log("code: " + code);
-        console.log("state: " + state);
-    }
-    else {
+    } else {
         code = String(pathname).split("=")[1].split("&")[0];
         state = String(pathname).split("=")[2];
-        console.log("code: " + code);
-        console.log("state: " + state);
     }
     if (choose == 1) {
         var data = {
@@ -430,7 +401,6 @@ function GetUserProfile(choose, pathname, callback) {
     }
     var dns = require('dns');
     dns.lookup('api.line.me', function (err, result) {
-        console.log(result);
         logger.info(result);
     });
     var postdata = "grant_type=" + data.grant_type + "&code=" + data.code + "&redirect_uri=" + data.redirect_uri + "&client_id=" + data.client_id + "&client_secret=" + data.client_secret;
@@ -449,7 +419,7 @@ function GetUserProfile(choose, pathname, callback) {
         var access;
         res.setEncoding('utf8');
         res.on('data', function (chunk) {
-            console.log('Response: ' + chunk);
+            logger.info('Response: ' + chunk);
             if (access == true) {
                 callback(chunk);
             }
@@ -457,12 +427,12 @@ function GetUserProfile(choose, pathname, callback) {
         });
         res.on('end', function () {
         });
-        console.log('Reply message status code: ' + res.statusCode);
+        logger.info('Reply message status code: ' + res.statusCode);
         if (res.statusCode == 200) {
-            console.log('Reply message success');
+            logger.info('Reply message success');
             access = true;
         } else {
-            console.log('Reply message failure');
+            logger.info('Reply message failure');
             access = false;
         }
     });
@@ -473,7 +443,6 @@ function GetUserProfile(choose, pathname, callback) {
 //restfulapi
 app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
     logger.info('GET /setting request listDatasetInfoToShow_query');
-    console.log('GET /setting request listDatasetInfoToShow_query');
     try {
         var authToken = request.query.authToken;
         var datasetId = request.query.datasetId;
@@ -483,7 +452,6 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
             errorMessage: ''
         };
         if (authToken == undefined) {
-            console.log("No authorization key");
             logger.info("No authorization key");
             rst_false = {
                 result: false,
@@ -492,7 +460,6 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
             response.send(JSON.stringify(rst_false));
         }
         if (datasetId == undefined) {
-            console.log("No dataset id");
             logger.info("No dataset id");
             rst_false = {
                 result: false,
@@ -501,7 +468,6 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
             response.send(JSON.stringify(rst_false));
         }
         if (areaCode == undefined) {
-            console.log("No areaCode id");
             logger.info("No areaCode id");
             rst_false = {
                 result: false,
@@ -510,7 +476,6 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
             response.send(JSON.stringify(rst_false));
         }
         if (authToken != config.AUTH_TOKEN) {
-            console.log("Authorization fail");
             logger.info("Authorization fail");
             rst_false = {
                 result: false,
@@ -519,30 +484,23 @@ app.get('/restfulapi/v1/listDatasetInfoToShow/', function (request, response) {
             response.send(JSON.stringify(rst_false));
         }
         listDatasetInfoToShow(datasetId, areaCode, function (data) {
-            console.log("listDatasetInfoToShow_sendData: " + JSON.stringify(data));
             logger.info("listDatasetInfoToShow_sendData: " + JSON.stringify(data));
             response.send(data);
         });
         //response.end();
     } catch (err) {
-        console.log('error(listDatasetInfoToShow)');
         logger.info('error(listDatasetInfoToShow)');
-        console.log(err);
         logger.info(err);
     }
 
 });
 function listDatasetInfoToShow(did, area, callback) {
     logger.info('function listDatasetInfoToShow');
-    console.log('function listDatasetInfoToShow');
-    console.log("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')");
     logger.info("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')");
     pool.getConnection(function (error, connection) {
         // mysql
         if (!!error) {
-            console.log('connection.query error');
             logger.info('connection.query error');
-            console.log(err);
             logger.info(err);
         } else {
             connection.query("SELECT info_to_show FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
@@ -557,12 +515,10 @@ function listDatasetInfoToShow(did, area, callback) {
                 };
                 if (error) {
                     logger.info(error);
-                    console.log(error);
                 } else {
                     try {
                         if (result == '') {
                             try {
-                                console.log('Error in the query(listDatasetInfoToShow)');
                                 logger.info('Error in the query(listDatasetInfoToShow)');
 
                                 rst_false = {
@@ -578,7 +534,6 @@ function listDatasetInfoToShow(did, area, callback) {
                                 logger.info(err);
                             }
                         } else {
-                            console.log('Successful query');
                             logger.info('Successful query');
                             rst_true = {
                                 'result': true,
@@ -590,9 +545,7 @@ function listDatasetInfoToShow(did, area, callback) {
                             return;
                         }
                     } catch (err) {
-                        console.log('result != "" ');
                         logger.info('result != "" ');
-                        console.log(err);
                         logger.info(err);
                     }
                 }
@@ -603,9 +556,7 @@ function listDatasetInfoToShow(did, area, callback) {
     });
 };
 app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response) {
-    console.log('GET /setting request listSubscriptionContainer');
     logger.info('GET /setting request listSubscriptionContainer');
-    console.log("listSubscriptionContainer_query: " + JSON.stringify(request.query));
     logger.info("listSubscriptionContainer_query: " + JSON.stringify(request.query));
     try {
         var authToken = request.query.authToken;
@@ -616,7 +567,7 @@ app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response
             errorMessage: ''
         };
         if (authToken == undefined) {
-            console.log("No authorization key");
+            logger.info("No authorization key");
             rst_false = {
                 result: false,
                 errorMessage: 'No authorization key'
@@ -624,7 +575,7 @@ app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response
             response.send(JSON.stringify(rst_false));
         }
         if (datasetId == undefined) {
-            console.log("No dataset id");
+            logger.info("No dataset id");
             rst_false = {
                 result: false,
                 errorMessage: 'No dataset id'
@@ -632,7 +583,7 @@ app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response
             response.send(JSON.stringify(rst_false));
         }
         if (memberId == undefined) {
-            console.log("No memberId id");
+            logger.info("No memberId id");
             rst_false = {
                 result: false,
                 errorMessage: 'No memberId id'
@@ -640,7 +591,7 @@ app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response
             response.send(JSON.stringify(rst_false));
         }
         if (authToken != config.AUTH_TOKEN) {
-            console.log("Authorization fail");
+            logger.info("Authorization fail");
             rst_false = {
                 result: false,
                 errorMessage: 'Authorization fail'
@@ -648,23 +599,19 @@ app.get('/restfulapi/v1/listSubscriptionContainer/', function (request, response
             response.send(JSON.stringify(rst_false));
         }
         listSubscriptionContainer(memberId, datasetId, function (data) {
-            console.log("listSubscriptionContainer_sendData: " + JSON.stringify(data));
+            logger.info("listSubscriptionContainer_sendData: " + JSON.stringify(data));
             response.send(data);
         });
         //response.end();
     } catch (err) {
-        console.log('error(listSubscriptionContainer)');
         logger.info('error(listSubscriptionContainer)');
-        console.log(err);
         logger.info(err);
     }
 
 });
 function listSubscriptionContainer(mid, did, callback) {
     logger.info('function listSubscriptionContainer');
-    console.log('function listSubscriptionContainer');
     logger.info('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
-    console.log('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
     var timestamp = new Date().getTime();
     logger.info('1.' + timestamp);
     pool.getConnection(function (error, connection) {
@@ -672,12 +619,9 @@ function listSubscriptionContainer(mid, did, callback) {
         // mysql
         if (!!error) {
             logger.info('Database Error');
-            console.log('Database Error');
             logger.info(error);
-            console.log(error);
         } else {
             logger.info('Database Connected');
-            console.log('Database Connected');
             logger.info('------------------------------------------------------' + "SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')");
             connection.query("SELECT * FROM subscription_container WHERE (mid = '" + mid + "' AND dataset_id = '" + did + "')", function (error, result) {
                 var rst_false = {
@@ -691,11 +635,9 @@ function listSubscriptionContainer(mid, did, callback) {
                 };
                 if (error) {
                     logger.info(error);
-                    console.log(error);
                 } else {
                     if (result == '') {
                         try {
-                            console.log('Error in the query(listSubscriptionContainer)');
                             logger.info('Error in the query(listSubscriptionContainer)');
                             rst_false = {
                                 result: false,
@@ -710,7 +652,6 @@ function listSubscriptionContainer(mid, did, callback) {
                             logger.info(err);
                         }
                     } else {
-                        console.log('Successful query');
                         logger.info('Successful query');
                         rst_true = {
                             'result': true,
@@ -729,9 +670,7 @@ function listSubscriptionContainer(mid, did, callback) {
 };
 app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response) {
     logger.info('POST/ (addSubscriptionContainer)');
-    console.log('POST/ (addSubscriptionContainer)');
     logger.info("addSubscriptionContainer_query: " + JSON.stringify(request.body));
-    console.log("addSubscriptionContainer_query: " + JSON.stringify(request.body));
     try {
         var authToken = request.body.authToken;
         var memberId = request.body.memberId;
@@ -742,7 +681,7 @@ app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response
             errorMessage: ''
         };
         if (authToken == undefined) {
-            console.log("No authorization key");
+            logger.info("No authorization key");
             rst_false = {
                 result: false,
                 errorMessage: 'No authorization key'
@@ -750,7 +689,7 @@ app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response
             response.send(JSON.stringify(rst_false));
         }
         if (datasetId == undefined) {
-            console.log("No dataset id");
+            logger.info("No dataset id");
             rst_false = {
                 result: false,
                 errorMessage: 'No dataset id'
@@ -758,7 +697,7 @@ app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response
             response.send(JSON.stringify(rst_false));
         }
         if (memberId == undefined) {
-            console.log("No member id");
+            logger.info("No member id");
             rst_false = {
                 result: false,
                 errorMessage: 'No member id'
@@ -766,7 +705,7 @@ app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response
             response.send(JSON.stringify(rst_false));
         }
         if (authToken != config.AUTH_TOKEN) {
-            console.log("Authorization fail");
+            logger.info("Authorization fail");
             rst_false = {
                 result: false,
                 errorMessage: 'Authorization fail'
@@ -774,36 +713,29 @@ app.post('/restfulapi/v1/addSubscriptionContainer/', function (request, response
             response.send(JSON.stringify(rst_false));
         }
         addSubscriptionContainer(memberId, datasetId, subscribeDetail, function (data) {
-            console.log("addSubscriptionContainer_sendData: " + JSON.stringify(data));
+            logger.info("addSubscriptionContainer_sendData: " + JSON.stringify(data));
             response.send(data);
         });
     } catch (err) {
-        console.log('error(addSubscriptionContainer)');
         logger.info('error(addSubscriptionContainer)');
-        console.log(err);
         logger.info(err);
     }
 });
 function addSubscriptionContainer(mid, did, sdetail, callback) {
     logger.info('function addSubscriptionContainer');
-    console.log('function addSubscriptionContainer');
     var MysqlFormat = new Date().toISOString().
         replace(/T/, ' ').      // replace T with a space
         replace(/\..+/, '');
     MysqlFormat = 'NOW()';
     logger.info(MysqlFormat);
-    console.log("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + "," + MysqlFormat + ",'1')");
     logger.info("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + ", " + MysqlFormat + " ,'1')");
     pool.getConnection(function (error, connection) {
         // mysql
         if (!!error) {
             logger.info('Database Error');
-            console.log('Database Error');
             logger.info(error);
-            console.log(error);
         } else {
             logger.info('Database Connected');
-            console.log('Database Connected');
             connection.query("INSERT INTO subscription_container VALUES ('" + mid + "','" + did + "','" + sdetail + "','0'," + MysqlFormat + "," + MysqlFormat + ",'1')", function (error, result) {
                 var rst_false = {
                     result: '',
@@ -815,11 +747,9 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
                     data: ''
                 };
                 if (error) {
-                    console.log(error);
                     logger.info(error)
                 } else {
                     if (result == '') {
-                        console.log('Error in the query(addSubscriptionContainer)');
                         logger.info('Error in the query(addSubscriptionContainer)');
                         rst_false = {
                             result: false,
@@ -829,7 +759,6 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
                         callback(rst_false);
                         return;
                     } else {
-                        console.log('Successful query');
                         logger.info('Successful query');
                         rst_true = {
                             'result': true,
@@ -849,7 +778,6 @@ function addSubscriptionContainer(mid, did, sdetail, callback) {
 
 app.put('/restfulapi/v1/updateSubscriptionContainer/', function (request, response) {
     logger.info('PUT updateSubscriptionContainer');
-    console.log("updateSubscriptionContainer_query: " + JSON.stringify(request.body));
     var authToken = request.body.authToken;
     var memberId = request.body.memberId;
     var datasetId = request.body.datasetId;
@@ -861,7 +789,7 @@ app.put('/restfulapi/v1/updateSubscriptionContainer/', function (request, respon
     };
     try {
         if (authToken == undefined) {
-            console.log("No authorization key");
+            logger.info("No authorization key");
             rst_false = {
                 result: false,
                 errorMessage: 'No authorization key'
@@ -869,7 +797,7 @@ app.put('/restfulapi/v1/updateSubscriptionContainer/', function (request, respon
             response.send(JSON.stringify(rst_false));
         }
         if (datasetId == undefined) {
-            console.log("No dataset id");
+            logger.info("No dataset id");
             rst_false = {
                 result: false,
                 errorMessage: 'No dataset id'
@@ -877,7 +805,7 @@ app.put('/restfulapi/v1/updateSubscriptionContainer/', function (request, respon
             response.send(JSON.stringify(rst_false));
         }
         if (memberId == undefined) {
-            console.log("No member id");
+            logger.info("No member id");
             rst_false = {
                 result: false,
                 errorMessage: 'No member id'
@@ -885,7 +813,7 @@ app.put('/restfulapi/v1/updateSubscriptionContainer/', function (request, respon
             response.send(JSON.stringify(rst_false));
         }
         if (authToken != config.AUTH_TOKEN) {
-            console.log("Authorization fail");
+            logger.info("Authorization fail");
             rst_false = {
                 result: false,
                 errorMessage: 'Authorization fail'
@@ -893,12 +821,10 @@ app.put('/restfulapi/v1/updateSubscriptionContainer/', function (request, respon
             response.send(JSON.stringify(rst_false));
         }
         updateSubscriptionContainer(memberId, datasetId, subscribeDetail, todo, function (data) {
-            console.log("updateSubscriptionContainerr_sendData: " + JSON.stringify(data));
+            logger.info("updateSubscriptionContainerr_sendData: " + JSON.stringify(data));
             response.send(data);
         });
     } catch (err) {
-        console.log('--------------------------------------------------------------/updateSubscriptionContainer');
-        console.log(err);
         logger.info('--------------------------------------------------------------/updateSubscriptionContainer');
         logger.info(err);
     }
@@ -912,140 +838,142 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
             replace(/\..+/, '');
         MysqlFormat = 'NOW()';
         listSubscriptionContainer(mid, did, function (origRaw) {
-            switch (todo) {
-                case 'cancelArea':
-                    // cancel ncdr area
-                    console.log("cancelArea");
-                    console.log("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
-                    origData = JSON.parse(origRaw['data']);
-                    console.log("origData: " + JSON.stringify(origData));
-                    origArea = JSON.parse(origData[0]['detail']);
-                    console.log("origArea: " + JSON.stringify(origArea));
-                    console.log('++++++++++++++++++++++++++++++++++++++++' + dataToUpdate);
-                    dataToUpdate = JSON.parse(dataToUpdate);
-                    console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
-                    origArea['area'].forEach(function (v, k) {//
-                        console.log("v: " + JSON.stringify(v) + " k: " + k);
-                        if (v == dataToUpdate['area'][0]) {
-                            console.log("find equal");
-                            origArea['area'].splice(k, 1);
-                        }
-                    });
-                    console.log("origArea['area']: " + JSON.stringify(origArea['area']) + "length: " + origArea['area'].length);
-                    var newArea = origArea['area'];
-                    console.log("newArea: " + JSON.stringify(newArea) + "length: " + newArea.length);
-                    dataToUpdate['area'] = newArea;
-                    console.log("dataToUpdate['area']: " + JSON.stringify(dataToUpdate['area']) + "dataToUpdate['area']: " + dataToUpdate['area'].length);
-                    if (dataToUpdate['area'].length == 0) {
-                        deleteSubscriptionContainer(mid, did, function (data) {
-                            console.log("updateSubscriptionContainerr_sendData1: " + JSON.stringify(data));
-                            callback(data);
+            try {
+                switch (todo) {
+                    case 'cancelArea':
+                        // cancel ncdr area
+                        logger.info("cancelArea");
+                        logger.info("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
+                        origData = JSON.parse(origRaw['data']);
+                        logger.info("origData: " + JSON.stringify(origData));
+                        origArea = JSON.parse(origData[0]['detail']);
+                        logger.info("origArea: " + JSON.stringify(origArea));
+                        logger.info('++++++++++++++++++++++++++++++++++++++++' + dataToUpdate);
+                        dataToUpdate = JSON.parse(dataToUpdate);
+                        logger.info("dataToUpdate: " + JSON.stringify(dataToUpdate));
+                        origArea['area'].forEach(function (v, k) {//
+                            logger.info("v: " + JSON.stringify(v) + " k: " + k);
+                            if (v == dataToUpdate['area'][0]) {
+                                logger.info("find equal");
+                                origArea['area'].splice(k, 1);
+                            }
                         });
-                        return;
-                    }
-                    dataToUpdate = JSON.stringify(dataToUpdate);
-                    break;
-                case 'addArea':
-                    // add ncdr area
-                    console.log("addArea");
-                    console.log("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
-                    origData = JSON.parse(origRaw['data']);
-                    console.log("origData: " + JSON.stringify(origData));
-                    origArea = JSON.parse(origData[0]['detail']);
-                    console.log("origArea: " + JSON.stringify(origArea));
-                    console.log('-------------------------------------------------------------------' + dataToUpdate);
-                    dataToUpdate = dataToUpdate;
-
-                    origArea['area'].push(dataToUpdate['area'][0]);
-                    dataToUpdate['area'] = origArea['area'];
-                    dataToUpdate = JSON.stringify(dataToUpdate);
-                    console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
-                    break;
-                case 'addAirboxSubArea':
-                    console.log("addAirboxSubArea");
-                    console.log("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
-                    origData = JSON.parse(origRaw['data']);
-                    console.log("origData: " + JSON.stringify(origData));
-
-                    origArea = JSON.parse(origData[0]['detail']);
-                    console.log("origArea: " + JSON.stringify(origArea));
-
-                    console.log('*********************************************' + dataToUpdate);
-                    dataToUpdate = JSON.parse(dataToUpdate);
-                    console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
-                    origArea.push(dataToUpdate);
-                    dataToUpdate = JSON.stringify(origArea);
-                    console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
-                    break;
-                case 'updateAirboxSubArea':
-                    console.log("updateAirboxSubArea");
-                    console.log("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
-
-                    origData = JSON.parse(origRaw['data']);
-                    console.log("origData: " + JSON.stringify(origData));
-
-                    origArea = JSON.parse(origData[0]['detail']);
-                    console.log("origArea: " + JSON.stringify(origArea));
-                    console.log('///////////////////////////////////////////////////////////////////////////////////////' + dataToUpdate);
-
-                    dataToUpdate = JSON.parse(dataToUpdate);
-                    console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
-                    origArea.forEach(function (v, k) {//
-                        console.log("v: " + JSON.stringify(v) + " k: " + k);
-                        if (v['area'] === dataToUpdate['area']) {
-                            origArea[k]['timeToPush'] = dataToUpdate['timeToPush'];
+                        logger.info("origArea['area']: " + JSON.stringify(origArea['area']) + "length: " + origArea['area'].length);
+                        var newArea = origArea['area'];
+                        logger.info("newArea: " + JSON.stringify(newArea) + "length: " + newArea.length);
+                        dataToUpdate['area'] = newArea;
+                        logger.info("dataToUpdate['area']: " + JSON.stringify(dataToUpdate['area']) + "dataToUpdate['area']: " + dataToUpdate['area'].length);
+                        if (dataToUpdate['area'].length == 0) {
+                            deleteSubscriptionContainer(mid, did, function (data) {
+                                logger.info("updateSubscriptionContainerr_sendData1: " + JSON.stringify(data));
+                                callback(data);
+                            });
+                            return;
                         }
-                    });
-                    dataToUpdate = JSON.stringify(origArea);
-                    console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
-                    //console.log(mid + " AND " + did);
-                    break;
-                case 'cancelAirboxSubArea'://
-                    console.log("cancelAirboxSubArea");
-                    console.log("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
+                        dataToUpdate = JSON.stringify(dataToUpdate);
+                        break;
+                    case 'addArea':
+                        // add ncdr area
+                        logger.info("addArea");
+                        logger.info("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
+                        origData = JSON.parse(origRaw['data']);
+                        logger.info("origData: " + JSON.stringify(origData));
+                        origArea = JSON.parse(origData[0]['detail']);
+                        logger.info("origArea: " + JSON.stringify(origArea));
+                        logger.info('-------------------------------------------------------------------' + dataToUpdate);
+                        dataToUpdate = dataToUpdate;
 
-                    origData = JSON.parse(origRaw['data']);
-                    console.log("origData: " + JSON.stringify(origData));
+                        origArea['area'].push(dataToUpdate['area'][0]);
+                        dataToUpdate['area'] = origArea['area'];
+                        dataToUpdate = JSON.stringify(dataToUpdate);
+                        logger.info("dataToUpdate: " + JSON.stringify(dataToUpdate));
+                        break;
+                    case 'addAirboxSubArea':
+                        logger.info("addAirboxSubArea");
+                        logger.info("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
+                        origData = JSON.parse(origRaw['data']);
+                        logger.info("origData: " + JSON.stringify(origData));
 
-                    origArea = JSON.parse(origData[0]['detail']);
-                    console.log("origArea: " + JSON.stringify(origArea));
+                        origArea = JSON.parse(origData[0]['detail']);
+                        logger.info("origArea: " + JSON.stringify(origArea));
 
-                    console.log('========================================' + dataToUpdate);
-                    dataToUpdate = JSON.parse(dataToUpdate);
-                    console.log("dataToUpdate: " + JSON.stringify(dataToUpdate));
-                    var index;
-                    origArea.forEach(function (v, k) {//
-                        console.log("v: " + JSON.stringify(v) + " k: " + k);
-                        if (v['area'] === dataToUpdate['area']) {
-                            origArea.splice(k, 1);
-                        }
-                    });
-                    var newArea = origArea;
-                    if (origArea.length == 0) {
-                        deleteSubscriptionContainer(mid, did, function (data) {
-                            console.log("updateSubscriptionContainerr_sendData2: " + JSON.stringify(data));
-                            callback(data);
+                        logger.info('*********************************************' + dataToUpdate);
+                        dataToUpdate = JSON.parse(dataToUpdate);
+                        logger.info("dataToUpdate: " + JSON.stringify(dataToUpdate));
+                        origArea.push(dataToUpdate);
+                        dataToUpdate = JSON.stringify(origArea);
+                        logger.info("dataToUpdate: " + JSON.stringify(dataToUpdate));
+                        break;
+                    case 'updateAirboxSubArea':
+                        logger.info("updateAirboxSubArea");
+                        logger.info("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
+
+                        origData = JSON.parse(origRaw['data']);
+                        logger.info("origData: " + JSON.stringify(origData));
+
+                        origArea = JSON.parse(origData[0]['detail']);
+                        logger.info("origArea: " + JSON.stringify(origArea));
+                        logger.info('///////////////////////////////////////////////////////////////////////////////////////' + dataToUpdate);
+
+                        dataToUpdate = JSON.parse(dataToUpdate);
+                        logger.info("dataToUpdate: " + JSON.stringify(dataToUpdate));
+                        origArea.forEach(function (v, k) {//
+                            logger.info("v: " + JSON.stringify(v) + " k: " + k);
+                            if (v['area'] === dataToUpdate['area']) {
+                                origArea[k]['timeToPush'] = dataToUpdate['timeToPush'];
+                            }
                         });
-                        return;
-                    }
-                    dataToUpdate = JSON.stringify(newArea);
-                    break;
-                // case 'pushNotification':
-                //     $query = "UPDATE `subscription_container` SET `last_pushed_at` = NOW(), `is_pushed` = 1 WHERE `mid` = :mid AND `dataset_id` = :did;";
-                //     break;
-                // case 'parseNotification':
-                //     $query = "UPDATE `subscription_container` SET `last_pushed_at` = NOW(), `is_pushed` = 0 WHERE `mid` = :mid AND `dataset_id` = :did;";
-                //     break;
-                default:
-                    break;
+                        dataToUpdate = JSON.stringify(origArea);
+                        logger.info("dataToUpdate: " + JSON.stringify(dataToUpdate));
+                        //logger.info(mid + " AND " + did);
+                        break;
+                    case 'cancelAirboxSubArea'://
+                        logger.info("cancelAirboxSubArea");
+                        logger.info("listSubscriptionContainer_sendData: " + JSON.stringify(origRaw));
+
+                        origData = JSON.parse(origRaw['data']);
+                        logger.info("origData: " + JSON.stringify(origData));
+
+                        origArea = JSON.parse(origData[0]['detail']);
+                        logger.info("origArea: " + JSON.stringify(origArea));
+
+                        logger.info('========================================' + dataToUpdate);
+                        dataToUpdate = JSON.parse(dataToUpdate);
+                        logger.info("dataToUpdate: " + JSON.stringify(dataToUpdate));
+                        var index;
+                        origArea.forEach(function (v, k) {//
+                            logger.info("v: " + JSON.stringify(v) + " k: " + k);
+                            if (v['area'] === dataToUpdate['area']) {
+                                origArea.splice(k, 1);
+                            }
+                        });
+                        var newArea = origArea;
+                        if (origArea.length == 0) {
+                            deleteSubscriptionContainer(mid, did, function (data) {
+                                logger.info("updateSubscriptionContainerr_sendData2: " + JSON.stringify(data));
+                                callback(data);
+                            });
+                            return;
+                        }
+                        dataToUpdate = JSON.stringify(newArea);
+                        break;
+                    // case 'pushNotification':
+                    //     $query = "UPDATE `subscription_container` SET `last_pushed_at` = NOW(), `is_pushed` = 1 WHERE `mid` = :mid AND `dataset_id` = :did;";
+                    //     break;
+                    // case 'parseNotification':
+                    //     $query = "UPDATE `subscription_container` SET `last_pushed_at` = NOW(), `is_pushed` = 0 WHERE `mid` = :mid AND `dataset_id` = :did;";
+                    //     break;
+                    default:
+                        break;
+                }
+            } catch (err) {
+                logger.info(err);
             }
             pool.getConnection(function (error, connection) {
                 // mysql
                 if (!!error) {
                     logger.info('Database Error');
-                    console.log('Database Error');
                     logger.info(error);
-                    console.log(error);
                 } else {
                     connection.query("UPDATE subscription_container SET detail = '" + dataToUpdate + "' , changed_at = " + MysqlFormat + " WHERE (dataset_id = '" + did + "' AND mid = '" + mid + "')", function (error, result) {
                         var rst_false = {
@@ -1058,11 +986,11 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                             data: ''
                         };
                         if (error) {
-                            console.log(error);
+                            logger.info(error);
                         } else {
-                            if (result == '') {
 
-                                console.log('Update failed');
+                            if (result == '') {
+                                logger.info('Update failed');
                                 rst_false = {
                                     result: false,
                                     errorMessage: 'Update failed'
@@ -1070,9 +998,8 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                                 connection.release();
                                 callback(rst_false);
                                 return;
-                            }
-                            else {
-                                console.log('subscription container updated');
+                            } else {
+                                logger.info('subscription container updated');
                                 rst_true = {
                                     'result': true,
                                     'errorMessage': 'subscription container updated',
@@ -1087,13 +1014,11 @@ function updateSubscriptionContainer(mid, did, dataToUpdate, todo, callback) {
                     });
                 }
             });
-
         });
     }
 };
 app.get('/restfulapi/v1/listDataset/', function (request, response) {
     logger.info('GET/(listDataset)');
-    console.log("listDataset: " + JSON.stringify(request.query));
     var authToken = request.query.authToken;
     var datasetId = request.query.datasetId;
     var memberId = request.query.memberId;
@@ -1103,7 +1028,7 @@ app.get('/restfulapi/v1/listDataset/', function (request, response) {
         errorMessage: ''
     };
     if (authToken == undefined) {
-        console.log("No authorization key");
+        logger.info("No authorization key");
         rst_false = {
             result: false,
             errorMessage: 'No authorization key'
@@ -1111,7 +1036,7 @@ app.get('/restfulapi/v1/listDataset/', function (request, response) {
         response.send(JSON.stringify(rst_false));
     }
     if (datasetId == undefined) {
-        console.log("No dataset id");
+        logger.info("No dataset id");
         rst_false = {
             result: false,
             errorMessage: 'No dataset id'
@@ -1119,7 +1044,7 @@ app.get('/restfulapi/v1/listDataset/', function (request, response) {
         response.send(JSON.stringify(rst_false));
     }
     if (memberId == undefined) {
-        console.log("No memberId id");
+        logger.info("No memberId id");
         rst_false = {
             result: false,
             errorMessage: 'No memberId id'
@@ -1127,7 +1052,7 @@ app.get('/restfulapi/v1/listDataset/', function (request, response) {
         response.send(JSON.stringify(rst_false));
     }
     if (authToken != config.AUTH_TOKEN) {
-        console.log("Authorization fail");
+        logger.info("Authorization fail");
         rst_false = {
             result: false,
             errorMessage: 'Authorization fail'
@@ -1135,7 +1060,6 @@ app.get('/restfulapi/v1/listDataset/', function (request, response) {
         response.send(JSON.stringify(rst_false));
     }
     listDataset(datasetId, areaCode, function (data) {
-        console.log("listDataset_sendData: " + JSON.stringify(data));
         logger.info("listDataset_sendData: " + JSON.stringify(data));
         response.send(data);
     });
@@ -1143,14 +1067,11 @@ app.get('/restfulapi/v1/listDataset/', function (request, response) {
 });
 function listDataset(did, area, callback) {
     logger.info('function listDataset');
-    console.log(did + " AND " + area);
     pool.getConnection(function (error, connection) {
         // mysql
         if (!!error) {
             logger.info('Database Error');
-            console.log('Database Error');
             logger.info(error);
-            console.log(error);
         } else {
             connection.query("SELECT * FROM dataset_to_display WHERE (id = '" + did + "' AND area_code = '" + area + "')", function (error, result) {
                 var rst_false = {
@@ -1164,10 +1085,9 @@ function listDataset(did, area, callback) {
                 };
                 if (error) {
                     logger.info('error');
-                    console.log(error);
                 } else {
                     if (result == '') {
-                        console.log('Error in the query(listDataset)');
+                        logger.info('Error in the query(listDataset)');
                         rst_false = {
                             result: false,
                             errorMessage: 'no subscription yet'
@@ -1175,9 +1095,8 @@ function listDataset(did, area, callback) {
                         connection.release();
                         callback(rst_false);
                         return;
-                    }
-                    else {
-                        console.log('Successful query');
+                    } else {
+                        logger.info('Successful query');
                         rst_true = {
                             'result': true,
                             'errorMessage': 'success',
@@ -1196,7 +1115,6 @@ function listDataset(did, area, callback) {
 }
 app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
     logger.info('GET/(listPDatasetInfoToShow)');
-    console.log("listPDatasetInfoToShow: " + JSON.stringify(request.query));
     var authToken = request.query.authToken;
     var datasetId = request.query.datasetId;
     var areaCode = request.query.areaCode;
@@ -1205,7 +1123,7 @@ app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
         errorMessage: ''
     };
     if (authToken == undefined) {
-        console.log("No authorization key");
+        logger.info("No authorization key");
         rst_false = {
             result: false,
             errorMessage: 'No authorization key'
@@ -1213,7 +1131,7 @@ app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
         response.send(JSON.stringify(rst_false));
     }
     if (datasetId == undefined) {
-        console.log("No dataset id");
+        logger.info("No dataset id");
         rst_false = {
             result: false,
             errorMessage: 'No dataset id'
@@ -1221,7 +1139,7 @@ app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
         response.send(JSON.stringify(rst_false));
     }
     if (authToken != config.AUTH_TOKEN) {
-        console.log("Authorization fail");
+        logger.info("Authorization fail");
         rst_false = {
             result: false,
             errorMessage: 'Authorization fail'
@@ -1229,21 +1147,18 @@ app.get('/restfulapi/v1/listPDatasetInfoToShow/', function (request, response) {
         response.send(JSON.stringify(rst_false));
     }
     listPDatasetInfoToShow(datasetId, areaCode, function (data) {
-        console.log("listPDatasetInfoToShow_sendData: " + JSON.stringify(data));
+        logger.info("listPDatasetInfoToShow_sendData: " + JSON.stringify(data));
         response.send(data);
     });
     //response.end();
 });
 function listPDatasetInfoToShow(did, area, callback) {
     logger.info('listPDatasetInfoToShow');
-    console.log(did + " AND " + area);
     pool.getConnection(function (error, connection) {
         // mysql
         if (!!error) {
             logger.info('Database Error');
-            console.log('Database Error');
             logger.info(error);
-            console.log(error);
         } else {
             connection.query("SELECT info_to_show FROM dataset_to_push WHERE (id = '" + did + "' AND area_code = '" + area + "' AND (UNIX_TIMESTAMP(" + Date.now() + ")-UNIX_TIMESTAMP(`changed_at`) < 86400 ))", function (error, result) {
                 var rst_false = {
@@ -1257,10 +1172,9 @@ function listPDatasetInfoToShow(did, area, callback) {
                 };
                 if (error) {
                     logger.info(error);
-                    console.log(error);
                 } else {
                     if (result == '') {
-                        console.log('Error in the query(listPDatasetInfoToShow)');
+                        logger.info('Error in the query(listPDatasetInfoToShow)');
                         rst_false = {
                             result: false,
                             errorMessage: 'no subscription yet'
@@ -1268,8 +1182,8 @@ function listPDatasetInfoToShow(did, area, callback) {
                         connection.release();
                         callback(rst_false);
                         return;
-                    }else {
-                        console.log('Successful query');
+                    } else {
+                        logger.info('Successful query');
                         rst_true = {
                             'result': true,
                             'errorMessage': 'success',
@@ -1298,7 +1212,6 @@ app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, res
             errorMessage: ''
         };
         if (authToken == undefined) {
-            console.log("No authorization key");
             logger.info("No authorization key");
             rst_false = {
                 result: false,
@@ -1307,7 +1220,6 @@ app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, res
             response.send(JSON.stringify(rst_false));
         }
         if (datasetId == undefined) {
-            console.log("No dataset id");
             logger.info("No dataset id");
             rst_false = {
                 result: false,
@@ -1316,7 +1228,6 @@ app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, res
             response.send(JSON.stringify(rst_false));
         }
         if (memberId == undefined) {
-            console.log("No memberId id");
             logger.info("No memberId id");
             rst_false = {
                 result: false,
@@ -1325,7 +1236,6 @@ app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, res
             response.send(JSON.stringify(rst_false));
         }
         if (authToken != config.AUTH_TOKEN) {
-            console.log("Authorization fail");
             logger.info("No memberId id");
             rst_false = {
                 result: false,
@@ -1334,7 +1244,6 @@ app.delete('/restfulapi/v1/deleteSubscriptionContainer/', function (request, res
             response.send(JSON.stringify(rst_false));
         }
         deleteSubscriptionContainer(memberId, datasetId, function (data) {
-            console.log("deleteSubscriptionContainer_sendData: " + JSON.stringify(data));
             logger.info("deleteSubscriptionContainer_sendData: " + JSON.stringify(data));
             response.send(data);
         });
@@ -1349,9 +1258,7 @@ function deleteSubscriptionContainer(mid, did, callback) {
             // mysql
             if (!!error) {
                 logger.info('Database Error');
-                console.log('Database Error');
                 logger.info(error);
-                console.log(error);
             } else {
                 connection.query("DELETE FROM subscription_container WHERE mid = '" + mid + "' AND dataset_id = '" + did + "'", function (error, result) {
                     var rst_false = {
@@ -1368,7 +1275,6 @@ function deleteSubscriptionContainer(mid, did, callback) {
                         logger.info(error);
                     } else {
                         if (result == '') {
-                            console.log('Invalid input');
                             logger.info('Invalid input');
                             rst_false = {
                                 result: false,
@@ -1378,7 +1284,6 @@ function deleteSubscriptionContainer(mid, did, callback) {
                             callback(rst_false);
                             return;
                         } else {
-                            console.log('subscription container deleted');
                             logger.info('subscription container deleted');
                             rst_true = {
                                 'result': true,
@@ -1396,6 +1301,5 @@ function deleteSubscriptionContainer(mid, did, callback) {
         });
     } catch (err) {
         logger.info(err);
-        console.log(err);
     }
 };
