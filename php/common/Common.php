@@ -96,6 +96,9 @@ function messagesFromBot($uri, array $uids, array $messageFormat, array $message
     }
 
     if (!empty($rst)) {
+        $rst = json_decode($rst, true);
+		$rst['failed'] = 0;
+		$rst = json_encode($rst);
         return $rst;
     }
     return false;
