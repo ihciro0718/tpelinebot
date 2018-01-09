@@ -62,10 +62,7 @@ window.addEventListener("load", function (e) {
                 method: 'GET',
                 dataType: 'json'
             }).done(function (data) {
-                console.log(typeof(data));
-                console.log('1');
                 console.log(data);
-                console.log('2');
                 if (data['isCenterOpen'] === false) {
                     alert('僅應變中心開設時段提供查詢');
                     return;
