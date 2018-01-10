@@ -63,12 +63,12 @@ window.addEventListener("load", function (e) {
 
 
 function showEOCInfo(sel) {
-/*
+
     var infoaction = document.getElementById('subc__infoaction'),
         modal = document.getElementById('eoc__modal');
     var mm = document.getElementById('eoc_modal_master');
-    var api = './get_distaster_stat/' + sel.innerHTML;
-
+    var api = '../get_disaster_stat/' + sel.innerHTML;
+/*
     infoaction.innerHTML = '<p>【' + getGeocodeName(TAIWAN_POSTWITHGEO_CODE_TPE[sel.dataset.postcode]) + '】</p>';
     var le = document.createElement('br');
 
@@ -109,7 +109,7 @@ function showEOCInfo(sel) {
                 infoaction.appendChild(infoPerLine);
             }
             var iaa = document.createElement('a');
-            iaa.href = 'http://210.59.250.198/EOCLineMap/Map.html?District=' + getGeocodeName(TAIWAN_POSTWITHGEO_CODE_TPE[sel.dataset.postcode]);
+            iaa.href = 'http://163.29.163.57/EOCLineMap/Map.html?District=' + getGeocodeName(TAIWAN_POSTWITHGEO_CODE_TPE[sel.dataset.postcode]);
             iaa.style.fontSize = '22px';
             iaa.setAttribute('target', '_blank');
             iaa.innerHTML = '<br>查看更多資訊請點我';
