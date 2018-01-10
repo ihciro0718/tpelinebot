@@ -1,6 +1,5 @@
 <?php
 require ROOT_PATH . '/common/DbAccess.class.php';
-
 abstract class Parser
 {
     use TDebugLog;
@@ -73,7 +72,6 @@ abstract class Parser
             ':ac' => $ac,
             ':info' => $info,
         ]);
-
         $this->dbObj->doQuery();
     }
 
@@ -614,7 +612,7 @@ class AirboxDParser extends Parser
         }
 
         // 從小到大排序，assign時才會assign最新一筆
-        usort($this->airboxData['entries'], function ($a, $b) {
+        usort($this->airboxData['devices'], function ($a, $b) {
             return strtotime($a['time']) > strtotime($b['time']);
         });
         $j = 0;
@@ -623,8 +621,8 @@ class AirboxDParser extends Parser
             $rst[$j]['deviceName'] = preg_replace('/\r|\n/', '', $this->deviceInfoList[$i]['devicePos']);
             $rst[$j]['deviceDist'] = $this->deviceInfoList[$i]['deviceDist'];
             $rst[$j]['gps'] = $this->deviceInfoList[$i]['gps'];
-            foreach ($this->airboxData['entries'] as $abd) {
-                if ($abd['device_id'] === $this->deviceInfoList[$i]['deviceId']) {
+            foreach ($this->airboxData['devices'] as $abd) {
+                if ($abd['id'] === $this->deviceInfoList[$i]['deviceId']) {
                     $rst[$j]['recoreTime'] = $abd['time'];
                     $rst[$j]['pm25'] = $abd['pm25'];
                     $rst[$j]['gps']['lat'] = $abd['lat'];
