@@ -63,6 +63,7 @@ window.addEventListener("load", function (e) {
 
 
 function showEOCInfo(sel) {
+/*
     var infoaction = document.getElementById('subc__infoaction'),
         modal = document.getElementById('eoc__modal');
     var mm = document.getElementById('eoc_modal_master');
@@ -73,7 +74,7 @@ function showEOCInfo(sel) {
 
     var infoPerLine = document.createElement('span');
     infoPerLine.style.display = 'block';
-    var infoText = document.createTextNode(""/*i + ' : ' + data[i]*/);
+    var infoText = document.createTextNode("");  //i + ' : ' + data[i]
     infoPerLine.appendChild(infoText);
     infoaction.appendChild(infoPerLine);
 
@@ -90,7 +91,8 @@ function showEOCInfo(sel) {
     modal.style.width = w - 50 + 'px';
     modal.style.height = h - 20 + 'px';
     return;
-    /*$.ajax({
+    */
+    $.ajax({
         url: api,
         method: 'GET',
         dataType: 'json',
@@ -121,7 +123,7 @@ function showEOCInfo(sel) {
         modal.style.width = w - 50 + 'px';
         modal.style.height = h - 20 + 'px';
         return;
-    }).fail(function(jqXhr, text, et) {});*/
+    }).fail(function(jqXhr, text, et) {});
 }
 
 function closeEOCRst() {

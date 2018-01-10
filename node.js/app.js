@@ -116,14 +116,23 @@ app.get('/air_pollutioninfo', function (request, response) {
     } else {
         logger.info("false");
         logger.info('取得使用者資訊錯誤。');
-        response.send("<h1>無法取得權限<h1>");
-        /*fs.readFile('./pages/tpe/channelwebs/air_pollutioninfo/index.htm', 'utf8', function (err, data) {
-            if (err) {
-                this.res.send(err);
-            }
-            //data = data + '<script language="Javascript">history.go(-2);</script>';
-            this.res.send("");
-        }.bind({ req: request, res: response }));*/
+        //response.send("<h1>無法取得權限<h1>");
+        var notLogin;
+        if (notLogin == undefined) {
+            fs.readFile('./pages/tpe/channelwebs/index.htm', 'utf8', function (err, data) {
+                if (err) {
+                    logger.info(err);
+                    this.res.send(err);
+                    return;
+                }
+                //data = data + '<script language="Javascript">history.go(-2);</script>';
+                notLogin = data;
+                this.res.send(data);
+            }.bind({ req: request, res: response }));
+        } else {
+            logger.info(notLogin);
+            response.send(notLogin);
+        }
     }
 });
 var airMap;
@@ -217,7 +226,23 @@ app.get('/flood_control', function (request, response) {
     } else {
         logger.info("false");
         logger.info('取得使用者資訊錯誤。');
-        response.send("<h1>無法取得權限<h1>");
+        //response.send("<h1>無法取得權限<h1>");
+        var notLogin;
+        if (notLogin == undefined) {
+            fs.readFile('./pages/tpe/channelwebs/index.htm', 'utf8', function (err, data) {
+                if (err) {
+                    logger.info(err);
+                    this.res.send(err);
+                    return;
+                }
+                //data = data + '<script language="Javascript">history.go(-2);</script>';
+                notLogin = data;
+                this.res.send(data);
+            }.bind({ req: request, res: response }));
+        } else {
+            logger.info(notLogin);
+            response.send(notLogin);
+        }
     }
 });
 app.get('/get_center_control', function (request, response) {
