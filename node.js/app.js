@@ -345,13 +345,10 @@ app.get('/get_disaster_stat/:id', function (request, response) {
                     "Data": ""
                 }
                 finalData.Data = sendData;
-                response.send(finalData);//不確定Data是什麼有可能EOC無法顯示
+                response.send(finalData.Data);//不確定Data是什麼有可能EOC無法顯示
                 logger.info('success end');
             } else {
-                var finalData = {
-                    "isCenterOpen": false
-                }
-                response.send(finalData);
+                response.send(false);
                 logger.info('false end');
             }
         });
