@@ -17,14 +17,14 @@ var app = express();
 var fs = require('graceful-fs');
 
 var port = process.env.PORT || 443;  //run 在443 port上
-var privateKey = require('fs').readFileSync('/etc/letsencrypt/live/linetestservice.gov.taipei/privkey.pem');
-var certificate = require('fs').readFileSync('/etc/letsencrypt/live/linetestservice.gov.taipei/cert.pem');
+var privateKey = require('fs').readFileSync('/etc/letsencrypt/live/lineservice.gov.taipei/privkey.pem');
+var certificate = require('fs').readFileSync('/etc/letsencrypt/live/lineservice.gov.taipei/cert.pem');
 option = {
     key: privateKey,
     cert: certificate
 };
-var https = require('https');
-var server = https.createServer(option, app).listen(port);
+var https = require('http');
+var server = https.createServer(app).listen(port);
 /*
 var port = process.env.PORT || 8080;  //run 在8080 port上
 var http = require('http');
@@ -119,7 +119,7 @@ app.get('/air_pollutioninfo', function (request, response) {
         //response.send("<h1>無法取得權限<h1>");
         var notLogin;
         if (notLogin == undefined) {
-            fs.readFile('./pages/tpe/channelwebs/index.htm', 'utf8', function (err, data) {
+            fs.readFile(__dirname+'/pages/tpe/channelwebs/index.htm', 'utf8', function (err, data) {
                 if (err) {
                     logger.info(err);
                     this.res.send(err);
@@ -192,6 +192,25 @@ app.get('/air_pollutioninfo' + '/setup_airbox_subinfo', function (request, respo
         response.send(setupAirboxSubinfo);
     }
 });
+var tpeline;
+app.get('/tpelinebot' + '/503.html', function (request, response) {
+    logger.info('GET/(tpeline)');
+    request.header("Content-Type", 'text/html');
+    if (tpeline == undefined) {
+        fs.readFile(__dirname + '/pages/tpe/channelwebs/503.html', 'utf8', function (err, data) {
+            if (err) {
+                logger.info(err);
+                this.res.send(err);
+                return;
+            }
+            tpeline = data;
+            this.res.send(data);
+        }.bind({ req: request, res: response }));
+    } else {
+        logger.info(tpeline);
+        response.send(tpeline);
+    }
+});
 
 app.get('/flood_control', function (request, response) {
     logger.info('GET/(floodControl)');
@@ -229,7 +248,7 @@ app.get('/flood_control', function (request, response) {
         //response.send("<h1>無法取得權限<h1>");
         var notLogin;
         if (notLogin == undefined) {
-            fs.readFile('./pages/tpe/channelwebs/index.htm', 'utf8', function (err, data) {
+            fs.readFile(__dirname + '/pages/tpe/channelwebs/index.htm', 'utf8', function (err, data) {
                 if (err) {
                     logger.info(err);
                     this.res.send(err);
@@ -275,7 +294,9 @@ app.get('/get_center_control', function (request, response) {
                     "Data": ""
                 }
                 finalData.Data = sendData;
-                response.send(finalData);
+				logger.info(finalData.Data);
+				logger.info(finalData);
+                response.send(finalData.Data);
                 logger.info('success end');
             } else {
                 var finalData = {

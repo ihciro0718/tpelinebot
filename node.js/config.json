@@ -1,8 +1,8 @@
 {
-    "channel_id": "1547515310",
-    "channel_secret": "3585d5d1051770475400c26b3056d3d5",
-    "redirect_uri": "https://linetestservice.gov.taipei/",
-    "channel_access_token": "ldG15q4a0aBxI7zZzo1urYodWNlnKITv+DR7qClfed32S+upkRel6tLgWDMF8f/3f0PIUsOZSWGh5Semj8cdk9CxbHo17c4UMXxIxc7iIz5zKlhXhNXMlsvdNkbh4ZgpwHUl+ymhIwPu3OHd5qlxAJpJanU2lNBfYDNdOKTsp30=",
+    "channel_id": "1469551543",
+    "channel_secret": "e29aae672bf4e94cdd904b9b4121e92b",
+    "redirect_uri": "https://lineservice.gov.taipei/",
+    "channel_access_token": "",
     "AUTH_TOKEN": "",
-    "eocip": "210.59.250.198"
+    "eocip": "163.29.163.57"
 }

@@ -1,6 +1,6 @@
-var host = '172.25.19.221';
-var user = 'root';
-var password = '';
+var host = '172.25.19.134';
+var user = 'linebot';
+var password = 'T92yvRsiny93Lw1yPocF1P1uOP8wGjGdoP6q9s/4DJo=';
 var database = 'linebot';
 var table = 'member';
 
