@@ -221,6 +221,10 @@ class AirboxPusher
                             }
                         }
                     }
+					else{
+						$message .= '【' . $info[0]['deviceDist'] . '】' . PHP_EOL . '各監測點空氣盒子情形如下:';
+						$message .= PHP_EOL . '目前無本區域資料';
+					}
                 }
                 if (strlen($message) > 21) {
                     $message .= PHP_EOL . '(此為自動推播訊息)';
